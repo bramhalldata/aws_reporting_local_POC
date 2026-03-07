@@ -20,10 +20,51 @@ const styles = {
     fontWeight: 700,
     color: "#0f172a",
   },
-  freshness: {
+  banner: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0",
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0.75rem 1.25rem",
+    marginBottom: "1.5rem",
+    alignItems: "center",
+    rowGap: "0.5rem",
+  },
+  bannerField: {
+    display: "flex",
+    flexDirection: "column",
+    paddingRight: "2rem",
+  },
+  bannerLabel: {
+    fontSize: "0.65rem",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.07em",
+    color: "#94a3b8",
+    marginBottom: "0.2rem",
+  },
+  bannerValue: {
     fontSize: "0.8rem",
-    color: "#64748b",
-    marginTop: "0.35rem",
+    color: "#1e293b",
+    fontFamily: "monospace",
+  },
+  pill: {
+    display: "inline-block",
+    padding: "0.2rem 0.6rem",
+    borderRadius: 999,
+    fontSize: "0.75rem",
+    fontWeight: 700,
+    letterSpacing: "0.05em",
+  },
+  pillSuccess: {
+    background: "#dcfce7",
+    color: "#166534",
+  },
+  pillError: {
+    background: "#fef2f2",
+    color: "#991b1b",
   },
   kpiRow: {
     display: "flex",
@@ -124,7 +165,7 @@ async function loadArtifacts() {
   }
   const manifest = await manifestRes.json();
 
-  if (manifest.status !== "ok") {
+  if (manifest.status !== "SUCCESS") {
     throw new Error(`Publisher reported status: "${manifest.status}". Check publisher logs.`);
   }
 
@@ -159,6 +200,31 @@ async function loadArtifacts() {
 // ---------------------------------------------------------------------------
 // Components
 // ---------------------------------------------------------------------------
+
+function HealthBanner({ status, generatedAt, reportTs, schemaVersion }) {
+  const isSuccess = status === "SUCCESS";
+  const pillStyle = { ...styles.pill, ...(isSuccess ? styles.pillSuccess : styles.pillError) };
+  return (
+    <div style={styles.banner}>
+      <div style={styles.bannerField}>
+        <span style={styles.bannerLabel}>Status</span>
+        <span style={pillStyle}>{status}</span>
+      </div>
+      <div style={styles.bannerField}>
+        <span style={styles.bannerLabel}>Data as of</span>
+        <span style={styles.bannerValue}>{reportTs}</span>
+      </div>
+      <div style={styles.bannerField}>
+        <span style={styles.bannerLabel}>Generated</span>
+        <span style={styles.bannerValue}>{generatedAt}</span>
+      </div>
+      <div style={styles.bannerField}>
+        <span style={styles.bannerLabel}>Schema</span>
+        <span style={styles.bannerValue}>{schemaVersion}</span>
+      </div>
+    </div>
+  );
+}
 
 function KpiCard({ label, value }) {
   return (
@@ -273,15 +339,18 @@ export default function App() {
     );
   }
 
-  const { summary, trend30d, topSites, exceptions } = data;
+  const { manifest, summary, trend30d, topSites, exceptions } = data;
 
   return (
     <div style={styles.page}>
+      <HealthBanner
+        status={manifest.status}
+        generatedAt={manifest.generated_at}
+        reportTs={manifest.report_ts}
+        schemaVersion={manifest.schema_version}
+      />
       <header style={styles.header}>
         <h1 style={styles.title}>DLQ Operations</h1>
-        <p style={styles.freshness}>
-          Generated: {summary.generated_at} &nbsp;|&nbsp; Report window ends: {summary.report_ts}
-        </p>
       </header>
 
       <div style={styles.kpiRow}>

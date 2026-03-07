@@ -196,7 +196,8 @@ def run(report_ts: str) -> None:
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
-        "status": "ok",
+        "report_ts": report_ts,
+        "status": "SUCCESS",
         "artifacts": ["summary.json", "trend_30d.json", "top_sites.json", "exceptions.json"],
     }
     try:

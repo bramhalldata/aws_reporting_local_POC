@@ -274,3 +274,20 @@ If requirements appear to violate architecture rules:
 3. Propose alternatives aligned with the architecture.
 
 Architecture integrity takes precedence over feature speed.
+
+
+## 4. Planning Rules
+
+4.1 Significant changes must begin with PLAN mode.
+
+4.2 Before implementation begins, Claude must persist the implementation plan to:
+
+docs/plans/
+
+4.3 Plans should include:
+- affected files
+- schema changes
+- artifact impacts
+- verification steps
+
+4.4 Implementation should not begin until the plan has been reviewed and approved.
