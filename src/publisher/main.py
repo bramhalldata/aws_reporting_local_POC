@@ -22,6 +22,12 @@ import re
 import sys
 from datetime import datetime, timezone
 
+# Ensure the 'validators' subpackage resolves whether main.py is run directly
+# (python src/publisher/main.py) or imported as part of the installed package.
+_publisher_dir = os.path.dirname(os.path.abspath(__file__))
+if _publisher_dir not in sys.path:
+    sys.path.insert(0, _publisher_dir)
+
 import duckdb
 import jsonschema
 
@@ -91,8 +97,18 @@ def validate_required_blocks(blocks: dict[str, str]) -> None:
 # Publisher pipeline
 # ---------------------------------------------------------------------------
 
-def run(report_ts: str) -> None:
-    """Execute the full publish pipeline for a given report_ts."""
+def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) -> None:
+    """Execute the full publish pipeline.
+
+    Args:
+        report_ts:  ISO-8601 UTC timestamp anchoring all SQL metric windows.
+        env:        Deployment environment (e.g. 'local', 'prod').
+                    'local' uses DuckDB + local Parquet (POC stack).
+                    Future values will route to Athena + S3.
+        dashboard:  Dashboard identifier to publish (e.g. 'dlq_operations').
+        client:     Optional client identifier for multi-client deployments.
+    """
+    print(f"publisher run  env={env}  dashboard={dashboard}  client={client}")
 
     # 1. Validate Parquet source exists
     if not os.path.exists(PARQUET_PATH):
@@ -241,4 +257,4 @@ if __name__ == "__main__":
     # Compute report_ts once for the entire run.
     # All SQL metric windows and all artifact timestamps are anchored to these values.
     report_ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    run(report_ts)
+    run(report_ts, env="local", dashboard="dlq_operations", client=None)

@@ -56,9 +56,15 @@ with Athena SQL (Presto/Trino dialect) for the queries used here.
 
 ### Step 1 — Install Python dependencies
 
+Install the publisher as an editable package (installs the `publisher` CLI command):
+
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
+
+This installs all Python dependencies (`duckdb`, `pyarrow`, `jsonschema`) and registers
+the `publisher` command. If you prefer not to use the editable install, you can still
+use `pip install -r requirements.txt` and invoke the publisher directly (see Legacy path below).
 
 ### Step 2 — Generate synthetic Parquet data (ETL substitute)
 
@@ -72,15 +78,30 @@ Output: `data/parquet/ccd_failures.parquet` (200 rows, 5 sites, 10-day window)
 
 ### Step 3 — Run the publisher
 
-Queries DuckDB, validates schemas, and writes both JSON artifacts.
+```bash
+publisher run --env local --dashboard dlq_operations
+```
+
+**`--env local`** runs the local POC stack: DuckDB in-memory with
+`data/parquet/ccd_failures.parquet` as the data source. This is the local substitute for
+AWS Athena + S3 Parquet gold tables. Future `--env` values (e.g. `prod`) will route the
+same `run()` function to real Athena and S3.
+
+Output:
+- `artifacts/manifest.json`
+- `artifacts/summary.json`
+- `artifacts/trend_30d.json`
+- `artifacts/top_sites.json`
+- `artifacts/exceptions.json`
+
+#### Legacy path (no editable install required)
 
 ```bash
 python src/publisher/main.py
 ```
 
-Output:
-- `artifacts/summary.json`
-- `artifacts/manifest.json`
+This is equivalent to `publisher run --env local --dashboard dlq_operations` and will
+continue to work for backward compatibility.
 
 ### Step 4 — Start the portal
 
@@ -92,7 +113,7 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
-The portal loads `manifest.json` to confirm pipeline status, then loads `summary.json`
+The portal loads `manifest.json` to confirm pipeline status, then loads all artifacts
 to render the dashboard.
 
 ---
