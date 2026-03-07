@@ -1,0 +1,26 @@
+# Generated artifacts
+artifacts/*.json
+
+# Parquet data files
+data/parquet/*.parquet
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Node
+node_modules/
+portal/dist/
+
+# DuckDB
+*.duckdb
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
