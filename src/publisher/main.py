@@ -9,7 +9,7 @@ Pipeline:
 Architecture rules enforced here:
   - Metrics are defined in sql/athena_views.sql, not in this file.
   - This file only executes queries, assembles results, validates, and writes.
-  - report_ts is computed once and injected into all queries so runs are deterministic.
+  - report_ts and generated_at are each computed once and shared across all artifacts.
 
 In production, this service runs in ECS/Fargate, queries AWS Athena, and writes to S3.
 
@@ -25,7 +25,13 @@ from datetime import datetime, timezone
 import duckdb
 import jsonschema
 
-from validators import manifest_schema, summary_schema
+from validators import (
+    exceptions_schema,
+    manifest_schema,
+    summary_schema,
+    top_sites_schema,
+    trend_30d_schema,
+)
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -36,7 +42,14 @@ PARQUET_PATH = os.path.join(REPO_ROOT, "data", "parquet", "ccd_failures.parquet"
 SQL_PATH = os.path.join(REPO_ROOT, "sql", "athena_views.sql")
 ARTIFACTS_DIR = os.path.join(REPO_ROOT, "artifacts")
 
-REQUIRED_BLOCKS = {"failures_last_24h", "failures_last_7d", "top_sites_by_failures"}
+REQUIRED_BLOCKS = {
+    "failures_last_24h",
+    "failures_last_7d",
+    "top_sites_by_failures",
+    "trend_30d",
+    "top_sites_30d",
+    "exceptions_7d",
+}
 
 SCHEMA_VERSION = "1.0.0"
 
@@ -102,14 +115,25 @@ def run(report_ts: str) -> None:
     con = duckdb.connect(database=":memory:")
     con.execute(f"CREATE TABLE ccd_failures AS SELECT * FROM read_parquet('{PARQUET_PATH}')")
 
-    # 4. Execute metric queries (all metric logic is in the SQL file)
+    # 4. Execute all metric queries (all metric logic is in the SQL file)
     failures_24h = con.execute(blocks["failures_last_24h"]).fetchone()[0]
     failures_7d = con.execute(blocks["failures_last_7d"]).fetchone()[0]
-    top_sites_rows = con.execute(blocks["top_sites_by_failures"]).fetchall()
-    top_sites = [{"site": row[0], "failures": row[1]} for row in top_sites_rows]
+
+    top_sites_7d_rows = con.execute(blocks["top_sites_by_failures"]).fetchall()
+    top_sites_7d = [{"site": row[0], "failures": row[1]} for row in top_sites_7d_rows]
+
+    trend_rows = con.execute(blocks["trend_30d"]).fetchall()
+    trend_days = [{"date": str(row[0]), "failures": int(row[1])} for row in trend_rows]
+
+    top_sites_30d_rows = con.execute(blocks["top_sites_30d"]).fetchall()
+    top_sites_30d = [{"site": row[0], "failures": row[1]} for row in top_sites_30d_rows]
+
+    exceptions_rows = con.execute(blocks["exceptions_7d"]).fetchall()
+    exceptions = [{"failure_type": row[0], "count": row[1]} for row in exceptions_rows]
 
     con.close()
 
+    # generated_at is fixed once here; every artifact payload uses this same value.
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
     # 5. Build and validate summary.json
@@ -119,7 +143,7 @@ def run(report_ts: str) -> None:
         "report_ts": report_ts,
         "failures_last_24h": int(failures_24h),
         "failures_last_7d": int(failures_7d),
-        "top_sites": top_sites,
+        "top_sites": top_sites_7d,
     }
     try:
         summary_schema.validate(summary)
@@ -127,12 +151,53 @@ def run(report_ts: str) -> None:
         print(f"ERROR: summary.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
-    # 6. Build and validate manifest.json
+    # 6. Build and validate trend_30d.json
+    trend_30d = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated_at,
+        "report_ts": report_ts,
+        "days": trend_days,
+    }
+    try:
+        trend_30d_schema.validate(trend_30d)
+    except jsonschema.ValidationError as exc:
+        print(f"ERROR: trend_30d.json schema validation failed: {exc.message}", file=sys.stderr)
+        sys.exit(1)
+
+    # 7. Build and validate top_sites.json
+    top_sites = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated_at,
+        "report_ts": report_ts,
+        "window_days": 30,
+        "sites": top_sites_30d,
+    }
+    try:
+        top_sites_schema.validate(top_sites)
+    except jsonschema.ValidationError as exc:
+        print(f"ERROR: top_sites.json schema validation failed: {exc.message}", file=sys.stderr)
+        sys.exit(1)
+
+    # 8. Build and validate exceptions.json
+    exceptions_artifact = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated_at,
+        "report_ts": report_ts,
+        "window_days": 7,
+        "exceptions": exceptions,
+    }
+    try:
+        exceptions_schema.validate(exceptions_artifact)
+    except jsonschema.ValidationError as exc:
+        print(f"ERROR: exceptions.json schema validation failed: {exc.message}", file=sys.stderr)
+        sys.exit(1)
+
+    # 9. Build and validate manifest.json
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
         "status": "ok",
-        "artifacts": ["summary.json"],
+        "artifacts": ["summary.json", "trend_30d.json", "top_sites.json", "exceptions.json"],
     }
     try:
         manifest_schema.validate(manifest)
@@ -140,30 +205,39 @@ def run(report_ts: str) -> None:
         print(f"ERROR: manifest.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
-    # 7. Write artifacts (summary first, then manifest as the index)
+    # 10. Write artifacts (payload artifacts first, then manifest as the index)
     os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
-    summary_path = os.path.join(ARTIFACTS_DIR, "summary.json")
-    manifest_path = os.path.join(ARTIFACTS_DIR, "manifest.json")
+    def write_artifact(filename: str, payload: dict) -> str:
+        path = os.path.join(ARTIFACTS_DIR, filename)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, sort_keys=True)
+        return path
 
-    with open(summary_path, "w", encoding="utf-8") as f:
-        json.dump(summary, f, indent=2, sort_keys=True)
+    summary_path = write_artifact("summary.json", summary)
+    trend_path = write_artifact("trend_30d.json", trend_30d)
+    top_sites_path = write_artifact("top_sites.json", top_sites)
+    exceptions_path = write_artifact("exceptions.json", exceptions_artifact)
+    manifest_path = write_artifact("manifest.json", manifest)
 
-    with open(manifest_path, "w", encoding="utf-8") as f:
-        json.dump(manifest, f, indent=2, sort_keys=True)
-
-    # 8. Report
-    print(f"Publisher complete.")
+    # 11. Report
+    print("Publisher complete.")
     print(f"  report_ts          : {report_ts}")
+    print(f"  generated_at       : {generated_at}")
     print(f"  failures_last_24h  : {failures_24h}")
     print(f"  failures_last_7d   : {failures_7d}")
-    print(f"  top_sites          : {len(top_sites)} sites")
-    print(f"  artifacts/summary.json  -> {summary_path}")
-    print(f"  artifacts/manifest.json -> {manifest_path}")
+    print(f"  trend_30d days     : {len(trend_days)}")
+    print(f"  top_sites (30d)    : {len(top_sites_30d)} sites")
+    print(f"  exception types    : {len(exceptions)}")
+    print(f"  -> {summary_path}")
+    print(f"  -> {trend_path}")
+    print(f"  -> {top_sites_path}")
+    print(f"  -> {exceptions_path}")
+    print(f"  -> {manifest_path}")
 
 
 if __name__ == "__main__":
     # Compute report_ts once for the entire run.
-    # All SQL metric windows are anchored to this timestamp.
+    # All SQL metric windows and all artifact timestamps are anchored to these values.
     report_ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     run(report_ts)

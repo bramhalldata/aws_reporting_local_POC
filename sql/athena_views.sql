@@ -18,7 +18,8 @@
 --   ... SQL ...
 --   -- [end]
 --
--- Required blocks: failures_last_24h, failures_last_7d, top_sites_by_failures
+-- Required blocks: failures_last_24h, failures_last_7d, top_sites_by_failures,
+--                  trend_30d, top_sites_30d, exceptions_7d
 -- =============================================================================
 
 
@@ -48,4 +49,58 @@ WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 7 DAYS
 GROUP BY site
 ORDER BY failures DESC
 LIMIT 10;
+-- [end]
+
+
+-- [trend_30d]
+-- Returns exactly 30 rows (one per day) including days with zero failures.
+-- GENERATE_SERIES produces the full date spine; LEFT JOIN fills zeros via COALESCE.
+WITH date_series AS (
+    SELECT CAST(generate_series AS DATE) AS date
+    FROM GENERATE_SERIES(
+        CAST(TIMESTAMPTZ '{report_ts}' - INTERVAL 29 DAYS AS TIMESTAMP),
+        CAST(TIMESTAMPTZ '{report_ts}' AS TIMESTAMP),
+        INTERVAL 1 DAY
+    )
+),
+daily_counts AS (
+    SELECT
+        CAST(timestamp AS DATE) AS date,
+        COUNT(*) AS failures
+    FROM ccd_failures
+    WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 30 DAYS
+      AND timestamp <= TIMESTAMPTZ '{report_ts}'
+    GROUP BY CAST(timestamp AS DATE)
+)
+SELECT
+    ds.date,
+    COALESCE(dc.failures, 0) AS failures
+FROM date_series ds
+LEFT JOIN daily_counts dc ON ds.date = dc.date
+ORDER BY ds.date ASC;
+-- [end]
+
+
+-- [top_sites_30d]
+SELECT
+    site,
+    COUNT(*) AS failures
+FROM ccd_failures
+WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 30 DAYS
+  AND timestamp <= TIMESTAMPTZ '{report_ts}'
+GROUP BY site
+ORDER BY failures DESC
+LIMIT 10;
+-- [end]
+
+
+-- [exceptions_7d]
+SELECT
+    failure_type,
+    COUNT(*) AS count
+FROM ccd_failures
+WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 7 DAYS
+  AND timestamp <= TIMESTAMPTZ '{report_ts}'
+GROUP BY failure_type
+ORDER BY count DESC;
 -- [end]

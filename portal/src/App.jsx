@@ -52,6 +52,9 @@ const styles = {
     fontWeight: 700,
     color: "#dc2626",
   },
+  section: {
+    marginBottom: "2rem",
+  },
   tableCard: {
     background: "#fff",
     border: "1px solid #e2e8f0",
@@ -87,6 +90,12 @@ const styles = {
     fontSize: "0.9rem",
     borderBottom: "1px solid #f1f5f9",
   },
+  tdZero: {
+    padding: "0.65rem 1.25rem",
+    fontSize: "0.9rem",
+    borderBottom: "1px solid #f1f5f9",
+    color: "#94a3b8",
+  },
   errorBox: {
     background: "#fef2f2",
     border: "1px solid #fecaca",
@@ -119,18 +128,32 @@ async function loadArtifacts() {
     throw new Error(`Publisher reported status: "${manifest.status}". Check publisher logs.`);
   }
 
-  if (!manifest.artifacts.includes("summary.json")) {
-    throw new Error("manifest.json does not list summary.json. Re-run the publisher.");
-  }
+  const requireArtifact = (name) => {
+    if (!manifest.artifacts.includes(name)) {
+      throw new Error(`manifest.json does not list ${name}. Re-run the publisher.`);
+    }
+  };
 
-  // Step 2: load summary artifact
-  const summaryRes = await fetch("/summary.json");
-  if (!summaryRes.ok) {
-    throw new Error(`summary.json not found (HTTP ${summaryRes.status}).`);
-  }
-  const summary = await summaryRes.json();
+  requireArtifact("summary.json");
+  requireArtifact("trend_30d.json");
+  requireArtifact("top_sites.json");
+  requireArtifact("exceptions.json");
 
-  return { manifest, summary };
+  // Step 2: load all payload artifacts
+  const fetchJson = async (filename) => {
+    const res = await fetch(`/${filename}`);
+    if (!res.ok) throw new Error(`${filename} not found (HTTP ${res.status}).`);
+    return res.json();
+  };
+
+  const [summary, trend30d, topSites, exceptions] = await Promise.all([
+    fetchJson("summary.json"),
+    fetchJson("trend_30d.json"),
+    fetchJson("top_sites.json"),
+    fetchJson("exceptions.json"),
+  ]);
+
+  return { manifest, summary, trend30d, topSites, exceptions };
 }
 
 // ---------------------------------------------------------------------------
@@ -146,10 +169,10 @@ function KpiCard({ label, value }) {
   );
 }
 
-function TopSitesTable({ sites }) {
+function TopSitesTable({ title, sites }) {
   return (
     <div style={styles.tableCard}>
-      <div style={styles.tableTitle}>Top Sites by Failures (last 7 days)</div>
+      <div style={styles.tableTitle}>{title}</div>
       <table style={styles.table}>
         <thead>
           <tr>
@@ -162,6 +185,56 @@ function TopSitesTable({ sites }) {
             <tr key={row.site}>
               <td style={styles.td}>{row.site}</td>
               <td style={styles.td}>{row.failures.toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TrendTable({ days }) {
+  return (
+    <div style={styles.tableCard}>
+      <div style={styles.tableTitle}>Failure Trend — last 30 days</div>
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <th style={styles.th}>Date</th>
+            <th style={styles.th}>Failures</th>
+          </tr>
+        </thead>
+        <tbody>
+          {days.map((row) => (
+            <tr key={row.date}>
+              <td style={styles.td}>{row.date}</td>
+              <td style={row.failures === 0 ? styles.tdZero : styles.td}>
+                {row.failures === 0 ? "—" : row.failures.toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ExceptionsTable({ exceptions }) {
+  return (
+    <div style={styles.tableCard}>
+      <div style={styles.tableTitle}>Exceptions by Type — last 7 days</div>
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <th style={styles.th}>Failure Type</th>
+            <th style={styles.th}>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {exceptions.map((row) => (
+            <tr key={row.failure_type}>
+              <td style={styles.td}>{row.failure_type}</td>
+              <td style={styles.td}>{row.count.toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
@@ -200,7 +273,7 @@ export default function App() {
     );
   }
 
-  const { summary } = data;
+  const { summary, trend30d, topSites, exceptions } = data;
 
   return (
     <div style={styles.page}>
@@ -216,7 +289,27 @@ export default function App() {
         <KpiCard label="Failures — last 7 days" value={summary.failures_last_7d} />
       </div>
 
-      <TopSitesTable sites={summary.top_sites} />
+      <div style={styles.section}>
+        <TopSitesTable
+          title="Top Sites by Failures — last 7 days"
+          sites={summary.top_sites}
+        />
+      </div>
+
+      <div style={styles.section}>
+        <TrendTable days={trend30d.days} />
+      </div>
+
+      <div style={styles.section}>
+        <TopSitesTable
+          title="Top Sites by Failures — last 30 days"
+          sites={topSites.sites}
+        />
+      </div>
+
+      <div style={styles.section}>
+        <ExceptionsTable exceptions={exceptions.exceptions} />
+      </div>
     </div>
   );
 }
