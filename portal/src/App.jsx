@@ -1,4 +1,13 @@
 import { useEffect, useState } from "react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 
 // ---------------------------------------------------------------------------
 // Styles — inline to keep the portal self-contained with no build tooling deps
@@ -259,28 +268,51 @@ function TopSitesTable({ title, sites }) {
   );
 }
 
-function TrendTable({ days }) {
+function TrendChart({ days }) {
+  if (!days || days.length === 0) {
+    return (
+      <div style={styles.tableCard}>
+        <div style={styles.tableTitle}>Failure Trend — last 30 days</div>
+        <p style={{ padding: "1.25rem", color: "#94a3b8", margin: 0 }}>No trend data available.</p>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.tableCard}>
       <div style={styles.tableTitle}>Failure Trend — last 30 days</div>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>Date</th>
-            <th style={styles.th}>Failures</th>
-          </tr>
-        </thead>
-        <tbody>
-          {days.map((row) => (
-            <tr key={row.date}>
-              <td style={styles.td}>{row.date}</td>
-              <td style={row.failures === 0 ? styles.tdZero : styles.td}>
-                {row.failures === 0 ? "—" : row.failures.toLocaleString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ padding: "1.25rem 1rem 1rem 0" }}>
+        <ResponsiveContainer width="100%" height={240}>
+          <LineChart data={days} margin={{ top: 4, right: 24, bottom: 4, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 11, fill: "#64748b" }}
+              tickFormatter={(d) => d.slice(5)}
+              interval={4}
+            />
+            <YAxis
+              allowDecimals={false}
+              domain={[0, "auto"]}
+              tick={{ fontSize: 11, fill: "#64748b" }}
+              width={40}
+            />
+            <Tooltip
+              formatter={(value) => [value.toLocaleString(), "Failures"]}
+              labelStyle={{ fontWeight: 600, color: "#0f172a" }}
+              contentStyle={{ fontSize: "0.85rem" }}
+            />
+            <Line
+              type="monotone"
+              dataKey="failures"
+              stroke="#dc2626"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -366,7 +398,7 @@ export default function App() {
       </div>
 
       <div style={styles.section}>
-        <TrendTable days={trend30d.days} />
+        <TrendChart days={trend30d.days} />
       </div>
 
       <div style={styles.section}>
