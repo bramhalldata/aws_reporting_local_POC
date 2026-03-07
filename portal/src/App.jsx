@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { theme } from "./theme/cashmereTheme";
 
 // ---------------------------------------------------------------------------
 // Styles — inline to keep the portal self-contained with no build tooling deps
@@ -18,23 +19,25 @@ const styles = {
     maxWidth: 900,
     margin: "0 auto",
     padding: "2rem 1.5rem",
+    background: theme.background,
+    minHeight: "100vh",
   },
   header: {
     marginBottom: "2rem",
-    borderBottom: "2px solid #e2e8f0",
+    borderBottom: `2px solid ${theme.border}`,
     paddingBottom: "1rem",
   },
   title: {
     fontSize: "1.75rem",
     fontWeight: 700,
-    color: "#0f172a",
+    color: theme.textPrimary,
   },
-  banner: {
+  // bannerBase holds structural/layout properties only.
+  // Background and border are injected by getBannerStyle(status).
+  bannerBase: {
     display: "flex",
     flexWrap: "wrap",
     gap: "0",
-    background: "#f8fafc",
-    border: "1px solid #e2e8f0",
     borderRadius: 8,
     padding: "0.75rem 1.25rem",
     marginBottom: "1.5rem",
@@ -51,12 +54,12 @@ const styles = {
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: "0.07em",
-    color: "#94a3b8",
+    color: theme.textMuted,
     marginBottom: "0.2rem",
   },
   bannerValue: {
     fontSize: "0.8rem",
-    color: "#1e293b",
+    color: theme.textPrimary,
     fontFamily: "monospace",
   },
   pill: {
@@ -67,14 +70,6 @@ const styles = {
     fontWeight: 700,
     letterSpacing: "0.05em",
   },
-  pillSuccess: {
-    background: "#dcfce7",
-    color: "#166534",
-  },
-  pillError: {
-    background: "#fef2f2",
-    color: "#991b1b",
-  },
   kpiRow: {
     display: "flex",
     gap: "1.25rem",
@@ -83,8 +78,8 @@ const styles = {
   },
   kpiCard: {
     flex: "1 1 200px",
-    background: "#fff",
-    border: "1px solid #e2e8f0",
+    background: theme.surface,
+    border: `1px solid ${theme.border}`,
     borderRadius: 8,
     padding: "1.25rem 1.5rem",
     boxShadow: "0 1px 3px rgba(0,0,0,.06)",
@@ -94,20 +89,20 @@ const styles = {
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: "0.07em",
-    color: "#64748b",
+    color: theme.textSecondary,
     marginBottom: "0.5rem",
   },
   kpiValue: {
     fontSize: "2.25rem",
     fontWeight: 700,
-    color: "#dc2626",
+    color: theme.error,
   },
   section: {
     marginBottom: "2rem",
   },
   tableCard: {
-    background: "#fff",
-    border: "1px solid #e2e8f0",
+    background: theme.surface,
+    border: `1px solid ${theme.border}`,
     borderRadius: 8,
     boxShadow: "0 1px 3px rgba(0,0,0,.06)",
     overflow: "hidden",
@@ -115,10 +110,10 @@ const styles = {
   tableTitle: {
     fontSize: "0.9rem",
     fontWeight: 600,
-    color: "#0f172a",
+    color: theme.textPrimary,
     padding: "1rem 1.25rem",
-    borderBottom: "1px solid #e2e8f0",
-    background: "#f8fafc",
+    borderBottom: `1px solid ${theme.border}`,
+    background: theme.background,
   },
   table: {
     width: "100%",
@@ -131,34 +126,58 @@ const styles = {
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: "0.07em",
-    color: "#64748b",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
+    color: theme.textSecondary,
+    background: theme.background,
+    borderBottom: `1px solid ${theme.border}`,
   },
   td: {
     padding: "0.65rem 1.25rem",
     fontSize: "0.9rem",
-    borderBottom: "1px solid #f1f5f9",
+    borderBottom: `1px solid ${theme.divider}`,
   },
   tdZero: {
     padding: "0.65rem 1.25rem",
     fontSize: "0.9rem",
-    borderBottom: "1px solid #f1f5f9",
-    color: "#94a3b8",
+    borderBottom: `1px solid ${theme.divider}`,
+    color: theme.textMuted,
   },
   errorBox: {
-    background: "#fef2f2",
-    border: "1px solid #fecaca",
+    background: theme.errorBg,
+    border: `1px solid ${theme.errorBorder}`,
     borderRadius: 8,
     padding: "1.25rem 1.5rem",
-    color: "#991b1b",
+    color: theme.errorText,
     fontWeight: 500,
   },
   loading: {
-    color: "#64748b",
+    color: theme.textSecondary,
     fontSize: "0.95rem",
   },
 };
+
+// ---------------------------------------------------------------------------
+// Status helpers — semantic banner and pill styling per Cashmere theme
+// ---------------------------------------------------------------------------
+
+function getBannerStyle(status) {
+  if (status === "SUCCESS") {
+    return { background: theme.successBg, border: `1px solid ${theme.successBorder}` };
+  }
+  if (status === "WARNING") {
+    return { background: theme.warningBg, border: `1px solid ${theme.warningBorder}` };
+  }
+  return { background: theme.errorBg, border: `1px solid ${theme.errorBorder}` };
+}
+
+function getStatusPillStyle(status) {
+  if (status === "SUCCESS") {
+    return { background: theme.successBg, color: theme.successText };
+  }
+  if (status === "WARNING") {
+    return { background: theme.warningBg, color: theme.warningText };
+  }
+  return { background: theme.errorBg, color: theme.errorText };
+}
 
 // ---------------------------------------------------------------------------
 // Data loading — portal is presentation-only; no metrics computed here
@@ -169,7 +188,7 @@ async function loadArtifacts() {
   const manifestRes = await fetch("/manifest.json");
   if (!manifestRes.ok) {
     throw new Error(
-      `manifest.json not found (HTTP ${manifestRes.status}). Run the publisher first: python src/publisher/main.py`
+      `manifest.json not found (HTTP ${manifestRes.status}). Run the publisher first: publisher run --env local --dashboard dlq_operations`
     );
   }
   const manifest = await manifestRes.json();
@@ -211,13 +230,11 @@ async function loadArtifacts() {
 // ---------------------------------------------------------------------------
 
 function HealthBanner({ status, generatedAt, reportTs, schemaVersion }) {
-  const isSuccess = status === "SUCCESS";
-  const pillStyle = { ...styles.pill, ...(isSuccess ? styles.pillSuccess : styles.pillError) };
   return (
-    <div style={styles.banner}>
+    <div style={{ ...styles.bannerBase, ...getBannerStyle(status) }}>
       <div style={styles.bannerField}>
         <span style={styles.bannerLabel}>Status</span>
-        <span style={pillStyle}>{status}</span>
+        <span style={{ ...styles.pill, ...getStatusPillStyle(status) }}>{status}</span>
       </div>
       <div style={styles.bannerField}>
         <span style={styles.bannerLabel}>Data as of</span>
@@ -273,7 +290,7 @@ function TrendChart({ days }) {
     return (
       <div style={styles.tableCard}>
         <div style={styles.tableTitle}>Failure Trend — last 30 days</div>
-        <p style={{ padding: "1.25rem", color: "#94a3b8", margin: 0 }}>No trend data available.</p>
+        <p style={{ padding: "1.25rem", color: theme.textMuted, margin: 0 }}>No trend data available.</p>
       </div>
     );
   }
@@ -284,28 +301,28 @@ function TrendChart({ days }) {
       <div style={{ padding: "1.25rem 1rem 1rem 0" }}>
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={days} margin={{ top: 4, right: 24, bottom: 4, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke={theme.divider} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: "#64748b" }}
+              tick={{ fontSize: 11, fill: theme.textSecondary }}
               tickFormatter={(d) => d.slice(5)}
               interval={4}
             />
             <YAxis
               allowDecimals={false}
               domain={[0, "auto"]}
-              tick={{ fontSize: 11, fill: "#64748b" }}
+              tick={{ fontSize: 11, fill: theme.textSecondary }}
               width={40}
             />
             <Tooltip
               formatter={(value) => [value.toLocaleString(), "Failures"]}
-              labelStyle={{ fontWeight: 600, color: "#0f172a" }}
+              labelStyle={{ fontWeight: 600, color: theme.textPrimary }}
               contentStyle={{ fontSize: "0.85rem" }}
             />
             <Line
               type="monotone"
               dataKey="failures"
-              stroke="#dc2626"
+              stroke={theme.primaryBlue}
               strokeWidth={2}
               dot={false}
               activeDot={{ r: 4 }}
