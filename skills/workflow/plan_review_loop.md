@@ -7,9 +7,10 @@ This skill enforces a disciplined workflow for implementing non-trivial changes.
 Before writing or modifying code, the assistant must:
 1. Generate a clear implementation plan
 2. Persist the plan to disk
-3. Allow the plan to be reviewed externally
-4. Incorporate feedback
-5. Only then implement the change
+3. Generate a review prompt for external review
+4. Allow the plan to be reviewed externally
+5. Incorporate feedback
+6. Only then implement the change
 
 This process ensures architectural clarity, prevents scope drift, and improves code quality.
 
@@ -28,7 +29,7 @@ For trivial changes (e.g., typo fixes, small UI tweaks), this process may be ski
 
 # Workflow
 
-The workflow consists of five phases.
+The workflow consists of six phases.
 
 ## Phase 1 — Plan Creation
 
@@ -107,9 +108,50 @@ docs/plans/<plan_name>.md
 
 ---
 
-## Phase 3 — External Review
+## Phase 3 — Generate Review Prompt
 
-After the plan is persisted, the assistant must pause implementation and wait for review.
+After the plan is persisted, the assistant must automatically generate a **review prompt** for the external reviewer.
+
+The assistant should not wait for the user to ask for this.
+
+The review prompt must:
+
+- point to the saved plan artifact
+- reference the review skill
+- instruct the reviewer to produce a review artifact
+- make clear that implementation must not begin yet
+
+Default review artifact location:
+
+```
+docs/reviews/<feature_name>_review.md
+```
+
+Default review prompt template:
+
+```markdown
+Follow:
+
+skills/workflow/review-plan.md
+
+Review the artifact:
+
+docs/plans/<feature_name>_plan.md
+
+Produce the review artifact:
+
+docs/reviews/<feature_name>_review.md
+
+Do not implement code yet.
+```
+
+The assistant should include this prompt directly in its response after saving the plan.
+
+---
+
+## Phase 4 — External Review
+
+After the plan is persisted and the review prompt is generated, the assistant must pause implementation and wait for review.
 
 The user may:
 
@@ -122,7 +164,7 @@ The assistant must not implement the plan until explicitly approved.
 
 ---
 
-## Phase 4 — Plan Revision
+## Phase 5 — Plan Revision
 
 If feedback is provided, the assistant must revise the plan.
 
@@ -136,9 +178,11 @@ Revision rules:
 
 After revision, the updated plan should overwrite the original file.
 
+If the plan is revised materially, the assistant should also regenerate the review prompt so the reviewer sees the latest artifact path and intent.
+
 ---
 
-## Phase 5 — Implementation
+## Phase 6 — Implementation
 
 Only after approval should the assistant implement the plan.
 
@@ -183,6 +227,44 @@ This structure ensures consistency across all feature plans.
 
 ---
 
+# Required Handoff Output After Planning
+
+After completing the PLAN stage, the assistant must provide all of the following:
+
+1. Confirmation that the plan was saved
+2. The exact plan artifact path
+3. The exact review artifact path
+4. A ready-to-paste review prompt
+
+Example:
+
+```markdown
+Plan saved to:
+docs/plans/dashboard_navigation_plan.md
+
+Next step: external review
+
+Use this review prompt:
+
+Follow:
+
+skills/workflow/review-plan.md
+
+Review the artifact:
+
+docs/plans/dashboard_navigation_plan.md
+
+Produce the review artifact:
+
+docs/reviews/dashboard_navigation_review.md
+
+Do not implement code yet.
+```
+
+This removes the need for the user to manually construct the next-step prompt.
+
+---
+
 # Plan Quality Guidelines
 
 Plans must be:
@@ -198,6 +280,9 @@ Respect system boundaries.
 
 ### Reproducible
 Another engineer should be able to implement the feature using only the plan.
+
+### Review-ready
+The output must make it easy for an external reviewer to critique the plan without additional prompt construction.
 
 ---
 
@@ -244,6 +329,16 @@ Various UI files updated.
 Plans must not include sections from previous completed plans.
 
 Each plan must describe only the current feature.
+
+### Missing Handoff Prompt
+
+Bad example:
+
+```
+Plan complete.
+```
+
+A completed plan stage must include the review handoff prompt.
 
 ---
 
@@ -341,6 +436,7 @@ Using the plan review loop provides:
 - safer refactoring
 - cleaner commit history
 - higher quality features
+- lower prompt-writing overhead between AI systems
 
 This workflow turns AI-assisted coding into a structured engineering process rather than ad-hoc generation.
 

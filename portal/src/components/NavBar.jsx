@@ -40,6 +40,14 @@ const styles = {
     // NOTE: tab overflow threshold is approximately 6–8 tabs at standard viewport widths.
     // When approaching that count, address with a dropdown or scrollable tab strategy.
   },
+  // Phase 2 note: if platform links multiply (Settings, Admin, etc.), consider a
+  // platformLinks registry analogous to dashboardMeta rather than hardcoding here.
+  platformLinks: {
+    marginLeft: "auto",
+    display: "flex",
+    alignItems: "stretch",
+    height: "100%",
+  },
   tab: (isActive) => ({
     display: "flex",
     alignItems: "center",
@@ -69,6 +77,14 @@ export default function NavBar() {
             {label}
           </NavLink>
         ))}
+      </div>
+      <div style={styles.platformLinks}>
+        <NavLink
+          to="/history"
+          style={({ isActive }) => styles.tab(isActive)}
+        >
+          History
+        </NavLink>
       </div>
     </nav>
   );

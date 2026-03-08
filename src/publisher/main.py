@@ -16,6 +16,7 @@ In production, this service runs in ECS/Fargate, queries AWS Athena, and writes 
 Run: python src/publisher/main.py
 """
 
+import glob
 import json
 import os
 import re
@@ -37,6 +38,7 @@ from validators import (
     manifest_schema,
     pipeline_health_failure_types_schema,
     pipeline_health_summary_schema,
+    run_history_schema,
     summary_schema,
     top_sites_schema,
     trend_30d_schema,
@@ -97,6 +99,71 @@ def validate_required_blocks(blocks: dict[str, str], required_blocks: set[str]) 
         missing_list = ", ".join(sorted(missing))
         print(f"ERROR: Missing required SQL blocks in {SQL_PATH}: {missing_list}", file=sys.stderr)
         sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# Run history index
+# ---------------------------------------------------------------------------
+
+def _rebuild_run_history(generated_at: str) -> None:
+    """Scan artifacts/runs/ and rebuild artifacts/current/run_history.json.
+
+    Called at the end of every successful publisher run. Reads all manifest.json
+    files under ARTIFACTS_RUNS_DIR, assembles a sorted list of run entries, validates
+    against run_history_schema, and writes to ARTIFACTS_CURRENT_DIR/run_history.json.
+
+    On validation failure, logs a warning and returns without writing — dashboard
+    artifacts are already committed at this point and should not be invalidated.
+
+    Phase 2 note: RunHistory.jsx fetches /run_history.json directly. When client/env
+    scoping is introduced, adopt useArtifactPath for platform-level artifact paths.
+    """
+    runs = []
+    pattern = os.path.join(ARTIFACTS_RUNS_DIR, "*", "*", "manifest.json")
+    for manifest_path in sorted(glob.glob(pattern)):
+        try:
+            with open(manifest_path, encoding="utf-8") as f:
+                m = json.load(f)
+            # Extract dashboard_id from path: runs/<run_id>/<dashboard_id>/manifest.json
+            parts = os.path.normpath(manifest_path).split(os.sep)
+            dashboard_id = parts[-2]
+            runs.append({
+                "run_id":         m["run_id"],
+                "dashboard_id":   dashboard_id,
+                "report_ts":      m["report_ts"],
+                "generated_at":   m["generated_at"],
+                "status":         m["status"],
+                "artifacts":      m["artifacts"],
+                "schema_version": m["schema_version"],
+            })
+        except (KeyError, json.JSONDecodeError):
+            pass  # Skip malformed or incomplete manifests
+
+    # Sort: run_id descending (most recent first); within same run_id, dashboard_id ascending.
+    # Two-sort approach: stable sort on secondary key first, then primary key descending.
+    runs.sort(key=lambda r: r["dashboard_id"])
+    runs.sort(key=lambda r: r["run_id"], reverse=True)
+
+    run_history = {
+        "schema_version": "1.0.0",
+        "generated_at":   generated_at,
+        "runs":           runs,
+    }
+
+    try:
+        run_history_schema.validate(run_history)
+    except jsonschema.ValidationError as exc:
+        print(
+            f"WARNING: run_history.json schema validation failed — history not updated: {exc.message}",
+            file=sys.stderr,
+        )
+        return
+
+    history_path = os.path.join(ARTIFACTS_CURRENT_DIR, "run_history.json")
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump(run_history, f, indent=2, sort_keys=True)
+
+    print(f"  history        : {history_path} ({len(runs)} entries)")
 
 
 # ---------------------------------------------------------------------------
@@ -315,6 +382,9 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     print(f"  artifacts      : {list(artifacts_to_write.keys())}")
     print(f"  run folder     : {run_dir}")
     print(f"  current folder : {current_dir}")
+
+    # 10. Rebuild run history index.
+    _rebuild_run_history(generated_at)
 
 
 if __name__ == "__main__":
