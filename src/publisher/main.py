@@ -19,6 +19,7 @@ Run: python src/publisher/main.py
 import json
 import os
 import re
+import shutil
 import sys
 from datetime import datetime, timezone
 
@@ -46,7 +47,8 @@ from validators import (
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PARQUET_PATH = os.path.join(REPO_ROOT, "data", "parquet", "ccd_failures.parquet")
 SQL_PATH = os.path.join(REPO_ROOT, "sql", "athena_views.sql")
-ARTIFACTS_DIR = os.path.join(REPO_ROOT, "artifacts")
+ARTIFACTS_RUNS_DIR = os.path.join(REPO_ROOT, "artifacts", "runs")
+ARTIFACTS_CURRENT_DIR = os.path.join(REPO_ROOT, "artifacts", "current")
 
 REQUIRED_BLOCKS = {
     "failures_last_24h",
@@ -57,7 +59,7 @@ REQUIRED_BLOCKS = {
     "exceptions_7d",
 }
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 
 # ---------------------------------------------------------------------------
 # SQL parsing
@@ -208,9 +210,15 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         print(f"ERROR: exceptions.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
+    # Derive run_id from report_ts — strip non-alphanumeric characters.
+    # e.g. "2026-03-07T22:49:59Z" → "20260307T224959Z"
+    run_id = re.sub(r"[^a-zA-Z0-9]", "", report_ts)
+    run_dir = os.path.join(ARTIFACTS_RUNS_DIR, run_id)
+
     # 9. Build and validate manifest.json
     manifest = {
         "schema_version": SCHEMA_VERSION,
+        "run_id": run_id,
         "generated_at": generated_at,
         "report_ts": report_ts,
         "status": "SUCCESS",
@@ -222,23 +230,30 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         print(f"ERROR: manifest.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
-    # 10. Write artifacts (payload artifacts first, then manifest as the index)
-    os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+    # 10. Write artifacts to the versioned run folder (payload artifacts first, manifest last).
+    os.makedirs(run_dir, exist_ok=True)
 
     def write_artifact(filename: str, payload: dict) -> str:
-        path = os.path.join(ARTIFACTS_DIR, filename)
+        path = os.path.join(run_dir, filename)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2, sort_keys=True)
         return path
 
-    summary_path = write_artifact("summary.json", summary)
-    trend_path = write_artifact("trend_30d.json", trend_30d)
-    top_sites_path = write_artifact("top_sites.json", top_sites)
-    exceptions_path = write_artifact("exceptions.json", exceptions_artifact)
-    manifest_path = write_artifact("manifest.json", manifest)
+    write_artifact("summary.json", summary)
+    write_artifact("trend_30d.json", trend_30d)
+    write_artifact("top_sites.json", top_sites)
+    write_artifact("exceptions.json", exceptions_artifact)
+    write_artifact("manifest.json", manifest)
 
-    # 11. Report
+    # 11. Copy the complete run folder to artifacts/current/ so the portal can read stable URLs.
+    os.makedirs(ARTIFACTS_CURRENT_DIR, exist_ok=True)
+    artifact_files = ["summary.json", "trend_30d.json", "top_sites.json", "exceptions.json", "manifest.json"]
+    for filename in artifact_files:
+        shutil.copy2(os.path.join(run_dir, filename), os.path.join(ARTIFACTS_CURRENT_DIR, filename))
+
+    # 12. Report
     print("Publisher complete.")
+    print(f"  run_id             : {run_id}")
     print(f"  report_ts          : {report_ts}")
     print(f"  generated_at       : {generated_at}")
     print(f"  failures_last_24h  : {failures_24h}")
@@ -246,11 +261,8 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     print(f"  trend_30d days     : {len(trend_days)}")
     print(f"  top_sites (30d)    : {len(top_sites_30d)} sites")
     print(f"  exception types    : {len(exceptions)}")
-    print(f"  -> {summary_path}")
-    print(f"  -> {trend_path}")
-    print(f"  -> {top_sites_path}")
-    print(f"  -> {exceptions_path}")
-    print(f"  -> {manifest_path}")
+    print(f"  run folder         : {run_dir}")
+    print(f"  current folder     : {ARTIFACTS_CURRENT_DIR}")
 
 
 if __name__ == "__main__":
