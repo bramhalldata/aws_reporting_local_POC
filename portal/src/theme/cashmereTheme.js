@@ -39,4 +39,11 @@ export const theme = {
   errorBg:       "#FEE2E2",
   errorText:     "#991B1B",
   errorBorder:   "#FECACA",
+
+  // Navigation
+  navBg:           "#FFFFFF",   // surface white — nav sits on white
+  navBorder:       "#E2E8F0",   // divider — bottom border under nav
+  navText:         "#475569",   // textSecondary — inactive tab label
+  navActiveText:   "#1D4ED8",   // primaryBlue — active tab label
+  navActiveBorder: "#1D4ED8",   // primaryBlue — active tab bottom indicator
 };

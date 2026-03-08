@@ -1,15 +1,22 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { dashboards } from "./dashboards/index.js";
+import { dashboards, dashboardMeta } from "./dashboards/index.js";
+import AppShell from "./AppShell.jsx";
 
-// Router shell — renders the registered dashboard view for the current URL.
-// Default route redirects to /dlq_operations for backward compatibility.
+// Registry-driven default: first entry in dashboardMeta.
+// Changing the first entry in dashboardMeta changes the default landing page.
+const defaultPath = `/${dashboardMeta[0].id}`;
+
+// Router shell — wraps all routes in AppShell (NavBar + Outlet layout).
+// Routes are dynamically generated from the dashboard registry.
 export default function App() {
   return (
     <Routes>
-      {Object.entries(dashboards).map(([id, Component]) => (
-        <Route key={id} path={`/${id}`} element={<Component />} />
-      ))}
-      <Route path="*" element={<Navigate to="/dlq_operations" replace />} />
+      <Route element={<AppShell />}>
+        {Object.entries(dashboards).map(([id, Component]) => (
+          <Route key={id} path={`/${id}`} element={<Component />} />
+        ))}
+        <Route path="*" element={<Navigate to={defaultPath} replace />} />
+      </Route>
     </Routes>
   );
 }
