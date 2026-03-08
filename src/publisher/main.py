@@ -47,17 +47,9 @@ from validators import (
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PARQUET_PATH = os.path.join(REPO_ROOT, "data", "parquet", "ccd_failures.parquet")
 SQL_PATH = os.path.join(REPO_ROOT, "sql", "athena_views.sql")
+DASHBOARDS_DIR = os.path.join(REPO_ROOT, "dashboards")
 ARTIFACTS_RUNS_DIR = os.path.join(REPO_ROOT, "artifacts", "runs")
 ARTIFACTS_CURRENT_DIR = os.path.join(REPO_ROOT, "artifacts", "current")
-
-REQUIRED_BLOCKS = {
-    "failures_last_24h",
-    "failures_last_7d",
-    "top_sites_by_failures",
-    "trend_30d",
-    "top_sites_30d",
-    "exceptions_7d",
-}
 
 SCHEMA_VERSION = "1.1.0"
 
@@ -86,9 +78,19 @@ def parse_sql_blocks(sql_text: str) -> dict[str, str]:
     return blocks
 
 
-def validate_required_blocks(blocks: dict[str, str]) -> None:
+def load_dashboard_config(dashboard_id: str) -> dict:
+    """Load and return the dashboard config from dashboards/<dashboard_id>/dashboard.json."""
+    config_path = os.path.join(DASHBOARDS_DIR, dashboard_id, "dashboard.json")
+    if not os.path.exists(config_path):
+        print(f"ERROR: Dashboard config not found: {config_path}", file=sys.stderr)
+        sys.exit(1)
+    with open(config_path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def validate_required_blocks(blocks: dict[str, str], required_blocks: set[str]) -> None:
     """Fail fast if any required SQL block is missing."""
-    missing = REQUIRED_BLOCKS - blocks.keys()
+    missing = required_blocks - blocks.keys()
     if missing:
         missing_list = ", ".join(sorted(missing))
         print(f"ERROR: Missing required SQL blocks in {SQL_PATH}: {missing_list}", file=sys.stderr)
@@ -112,7 +114,12 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     """
     print(f"publisher run  env={env}  dashboard={dashboard}  client={client}")
 
-    # 1. Validate Parquet source exists
+    # 1. Load dashboard configuration
+    config = load_dashboard_config(dashboard)
+    required_blocks = set(config["sql_blocks"])
+    artifact_list = config["artifacts"]  # drives manifest and current/ copy
+
+    # 2. Validate Parquet source exists
     if not os.path.exists(PARQUET_PATH):
         print(
             f"ERROR: Parquet file not found: {PARQUET_PATH}\n"
@@ -121,19 +128,19 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         )
         sys.exit(1)
 
-    # 2. Read and parse SQL
+    # 3. Read and parse SQL
     with open(SQL_PATH, encoding="utf-8") as f:
         raw_sql = f.read()
 
     sql_with_ts = raw_sql.replace("{report_ts}", report_ts)
     blocks = parse_sql_blocks(sql_with_ts)
-    validate_required_blocks(blocks)
+    validate_required_blocks(blocks, required_blocks)
 
-    # 3. Connect DuckDB in-memory and register Parquet table
+    # 4. Connect DuckDB in-memory and register Parquet table
     con = duckdb.connect(database=":memory:")
     con.execute(f"CREATE TABLE ccd_failures AS SELECT * FROM read_parquet('{PARQUET_PATH}')")
 
-    # 4. Execute all metric queries (all metric logic is in the SQL file)
+    # 5. Execute all metric queries (all metric logic is in the SQL file)
     failures_24h = con.execute(blocks["failures_last_24h"]).fetchone()[0]
     failures_7d = con.execute(blocks["failures_last_7d"]).fetchone()[0]
 
@@ -154,7 +161,7 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     # generated_at is fixed once here; every artifact payload uses this same value.
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
-    # 5. Build and validate summary.json
+    # 6. Build and validate summary.json
     summary = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
@@ -169,7 +176,7 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         print(f"ERROR: summary.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
-    # 6. Build and validate trend_30d.json
+    # 7. Build and validate trend_30d.json
     trend_30d = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
@@ -182,7 +189,7 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         print(f"ERROR: trend_30d.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
-    # 7. Build and validate top_sites.json
+    # 8. Build and validate top_sites.json
     top_sites = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
@@ -196,7 +203,7 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         print(f"ERROR: top_sites.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
-    # 8. Build and validate exceptions.json
+    # 9. Build and validate exceptions.json
     exceptions_artifact = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
@@ -213,16 +220,17 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     # Derive run_id from report_ts — strip non-alphanumeric characters.
     # e.g. "2026-03-07T22:49:59Z" → "20260307T224959Z"
     run_id = re.sub(r"[^a-zA-Z0-9]", "", report_ts)
-    run_dir = os.path.join(ARTIFACTS_RUNS_DIR, run_id)
+    run_dir = os.path.join(ARTIFACTS_RUNS_DIR, run_id, dashboard)
+    current_dir = os.path.join(ARTIFACTS_CURRENT_DIR, dashboard)
 
-    # 9. Build and validate manifest.json
+    # 10. Build and validate manifest.json (artifact list sourced from dashboard config)
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "run_id": run_id,
         "generated_at": generated_at,
         "report_ts": report_ts,
         "status": "SUCCESS",
-        "artifacts": ["summary.json", "trend_30d.json", "top_sites.json", "exceptions.json"],
+        "artifacts": artifact_list,
     }
     try:
         manifest_schema.validate(manifest)
@@ -230,7 +238,7 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         print(f"ERROR: manifest.json schema validation failed: {exc.message}", file=sys.stderr)
         sys.exit(1)
 
-    # 10. Write artifacts to the versioned run folder (payload artifacts first, manifest last).
+    # 11. Write artifacts to the versioned run folder (payload artifacts first, manifest last).
     os.makedirs(run_dir, exist_ok=True)
 
     def write_artifact(filename: str, payload: dict) -> str:
@@ -245,14 +253,15 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     write_artifact("exceptions.json", exceptions_artifact)
     write_artifact("manifest.json", manifest)
 
-    # 11. Copy the complete run folder to artifacts/current/ so the portal can read stable URLs.
-    os.makedirs(ARTIFACTS_CURRENT_DIR, exist_ok=True)
-    artifact_files = ["summary.json", "trend_30d.json", "top_sites.json", "exceptions.json", "manifest.json"]
-    for filename in artifact_files:
-        shutil.copy2(os.path.join(run_dir, filename), os.path.join(ARTIFACTS_CURRENT_DIR, filename))
+    # 12. Copy run folder to artifacts/current/<dashboard>/ so the portal reads stable URLs.
+    os.makedirs(current_dir, exist_ok=True)
+    copy_files = artifact_list + ["manifest.json"]
+    for filename in copy_files:
+        shutil.copy2(os.path.join(run_dir, filename), os.path.join(current_dir, filename))
 
-    # 12. Report
+    # 13. Report
     print("Publisher complete.")
+    print(f"  dashboard          : {dashboard}")
     print(f"  run_id             : {run_id}")
     print(f"  report_ts          : {report_ts}")
     print(f"  generated_at       : {generated_at}")
@@ -262,7 +271,7 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     print(f"  top_sites (30d)    : {len(top_sites_30d)} sites")
     print(f"  exception types    : {len(exceptions)}")
     print(f"  run folder         : {run_dir}")
-    print(f"  current folder     : {ARTIFACTS_CURRENT_DIR}")
+    print(f"  current folder     : {current_dir}")
 
 
 if __name__ == "__main__":

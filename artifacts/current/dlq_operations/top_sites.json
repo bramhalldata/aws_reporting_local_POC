@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-03-08T12:46:33+00:00",
+  "report_ts": "2026-03-08T12:46:33Z",
+  "schema_version": "1.1.0",
+  "sites": [
+    {
+      "failures": 45,
+      "site": "site_delta"
+    },
+    {
+      "failures": 41,
+      "site": "site_charlie"
+    },
+    {
+      "failures": 39,
+      "site": "site_echo"
+    },
+    {
+      "failures": 38,
+      "site": "site_alpha"
+    },
+    {
+      "failures": 37,
+      "site": "site_bravo"
+    }
+  ],
+  "window_days": 30
+}

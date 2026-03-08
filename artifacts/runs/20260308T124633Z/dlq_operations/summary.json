@@ -1,0 +1,29 @@
+{
+  "failures_last_24h": 0,
+  "failures_last_7d": 112,
+  "generated_at": "2026-03-08T12:46:33+00:00",
+  "report_ts": "2026-03-08T12:46:33Z",
+  "schema_version": "1.1.0",
+  "top_sites": [
+    {
+      "failures": 26,
+      "site": "site_delta"
+    },
+    {
+      "failures": 24,
+      "site": "site_charlie"
+    },
+    {
+      "failures": 23,
+      "site": "site_echo"
+    },
+    {
+      "failures": 20,
+      "site": "site_alpha"
+    },
+    {
+      "failures": 19,
+      "site": "site_bravo"
+    }
+  ]
+}

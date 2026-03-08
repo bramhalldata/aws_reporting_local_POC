@@ -1,0 +1,20 @@
+{
+  "dashboard_id": "dlq_operations",
+  "title": "DLQ Operations",
+  "description": "Monitors DLQ failure rates and site-level breakdowns.",
+  "portal_route": "/dlq_operations",
+  "sql_blocks": [
+    "failures_last_24h",
+    "failures_last_7d",
+    "top_sites_by_failures",
+    "trend_30d",
+    "top_sites_30d",
+    "exceptions_7d"
+  ],
+  "artifacts": [
+    "summary.json",
+    "trend_30d.json",
+    "top_sites.json",
+    "exceptions.json"
+  ]
+}
