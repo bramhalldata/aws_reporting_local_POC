@@ -18,8 +18,11 @@
 --   ... SQL ...
 --   -- [end]
 --
--- Required blocks: failures_last_24h, failures_last_7d, top_sites_by_failures,
---                  trend_30d, top_sites_30d, exceptions_7d
+-- Required blocks (dlq_operations):    failures_last_24h, failures_last_7d,
+--                                       top_sites_by_failures, trend_30d,
+--                                       top_sites_30d, exceptions_7d
+-- Required blocks (pipeline_health):   pipeline_docs_24h, pipeline_active_sites_24h,
+--                                       pipeline_latest_event, pipeline_failures_by_type_24h
 -- =============================================================================
 
 
@@ -100,6 +103,44 @@ SELECT
     COUNT(*) AS count
 FROM ccd_failures
 WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 7 DAYS
+  AND timestamp <= TIMESTAMPTZ '{report_ts}'
+GROUP BY failure_type
+ORDER BY count DESC;
+-- [end]
+
+
+-- =============================================================================
+-- pipeline_health blocks
+-- =============================================================================
+
+-- [pipeline_docs_24h]
+SELECT COUNT(DISTINCT document_id) AS total_documents
+FROM ccd_failures
+WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 24 HOURS
+  AND timestamp <= TIMESTAMPTZ '{report_ts}';
+-- [end]
+
+
+-- [pipeline_active_sites_24h]
+SELECT COUNT(DISTINCT site) AS active_sites
+FROM ccd_failures
+WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 24 HOURS
+  AND timestamp <= TIMESTAMPTZ '{report_ts}';
+-- [end]
+
+
+-- [pipeline_latest_event]
+SELECT MAX(timestamp) AS latest_event_timestamp
+FROM ccd_failures;
+-- [end]
+
+
+-- [pipeline_failures_by_type_24h]
+SELECT
+    failure_type,
+    COUNT(*) AS count
+FROM ccd_failures
+WHERE timestamp >= TIMESTAMPTZ '{report_ts}' - INTERVAL 24 HOURS
   AND timestamp <= TIMESTAMPTZ '{report_ts}'
 GROUP BY failure_type
 ORDER BY count DESC;

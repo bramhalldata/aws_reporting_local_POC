@@ -1,0 +1,16 @@
+{
+  "dashboard_id": "pipeline_health",
+  "title": "Pipeline Health",
+  "description": "Lightweight operational health indicators for the CCD failure pipeline.",
+  "portal_route": "/pipeline_health",
+  "sql_blocks": [
+    "pipeline_docs_24h",
+    "pipeline_active_sites_24h",
+    "pipeline_latest_event",
+    "pipeline_failures_by_type_24h"
+  ],
+  "artifacts": [
+    "summary.json",
+    "failure_types.json"
+  ]
+}

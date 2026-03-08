@@ -38,10 +38,10 @@ const styles = {
   },
 };
 
-export default function ExceptionsTable({ exceptions }) {
+export default function ExceptionsTable({ exceptions, title = "Exceptions by Type — last 7 days" }) {
   return (
     <div style={styles.tableCard}>
-      <div style={styles.tableTitle}>Exceptions by Type — last 7 days</div>
+      <div style={styles.tableTitle}>{title}</div>
       <table style={styles.table}>
         <thead>
           <tr>
