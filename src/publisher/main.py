@@ -52,10 +52,9 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PARQUET_PATH = os.path.join(REPO_ROOT, "data", "parquet", "ccd_failures.parquet")
 SQL_PATH = os.path.join(REPO_ROOT, "sql", "athena_views.sql")
 DASHBOARDS_DIR = os.path.join(REPO_ROOT, "dashboards")
-ARTIFACTS_RUNS_DIR = os.path.join(REPO_ROOT, "artifacts", "runs")
-ARTIFACTS_CURRENT_DIR = os.path.join(REPO_ROOT, "artifacts", "current")
+ARTIFACTS_BASE_DIR = os.path.join(REPO_ROOT, "artifacts")
 
-SCHEMA_VERSION = "1.1.0"
+SCHEMA_VERSION = "1.2.0"
 
 # ---------------------------------------------------------------------------
 # SQL parsing
@@ -105,21 +104,19 @@ def validate_required_blocks(blocks: dict[str, str], required_blocks: set[str]) 
 # Run history index
 # ---------------------------------------------------------------------------
 
-def _rebuild_run_history(generated_at: str) -> None:
-    """Scan artifacts/runs/ and rebuild artifacts/current/run_history.json.
+def _rebuild_run_history(generated_at: str, *, client_id: str, env_id: str) -> None:
+    """Scan artifacts/{client_id}/{env_id}/runs/ and rebuild run_history.json.
 
     Called at the end of every successful publisher run. Reads all manifest.json
-    files under ARTIFACTS_RUNS_DIR, assembles a sorted list of run entries, validates
-    against run_history_schema, and writes to ARTIFACTS_CURRENT_DIR/run_history.json.
+    files under the scoped runs directory, assembles a sorted list of run entries,
+    validates against run_history_schema, and writes to the scoped current/ directory.
 
     On validation failure, logs a warning and returns without writing — dashboard
     artifacts are already committed at this point and should not be invalidated.
-
-    Phase 2 note: RunHistory.jsx fetches /current/run_history.json. When client/env
-    scoping is introduced, adopt useArtifactPath for platform-level artifact paths.
     """
     runs = []
-    pattern = os.path.join(ARTIFACTS_RUNS_DIR, "*", "*", "manifest.json")
+    runs_dir = os.path.join(ARTIFACTS_BASE_DIR, client_id, env_id, "runs")
+    pattern = os.path.join(runs_dir, "*", "*", "manifest.json")
     for manifest_path in sorted(glob.glob(pattern)):
         try:
             with open(manifest_path, encoding="utf-8") as f:
@@ -134,7 +131,7 @@ def _rebuild_run_history(generated_at: str) -> None:
                 {
                     "name": filename,
                     "type": filename.replace(".json", ""),
-                    "path": f"runs/{m['run_id']}/{dashboard_id}/{filename}",
+                    "path": f"{client_id}/{env_id}/runs/{m['run_id']}/{dashboard_id}/{filename}",
                 }
                 for filename in m["artifacts"]
             ]
@@ -156,7 +153,9 @@ def _rebuild_run_history(generated_at: str) -> None:
     runs.sort(key=lambda r: r["run_id"], reverse=True)
 
     run_history = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
+        "client_id":      client_id,
+        "env_id":         env_id,
         "generated_at":   generated_at,
         "runs":           runs,
     }
@@ -170,7 +169,9 @@ def _rebuild_run_history(generated_at: str) -> None:
         )
         return
 
-    history_path = os.path.join(ARTIFACTS_CURRENT_DIR, "run_history.json")
+    current_dir = os.path.join(ARTIFACTS_BASE_DIR, client_id, env_id, "current")
+    os.makedirs(current_dir, exist_ok=True)
+    history_path = os.path.join(current_dir, "run_history.json")
     with open(history_path, "w", encoding="utf-8") as f:
         json.dump(run_history, f, indent=2, sort_keys=True)
 
@@ -192,7 +193,12 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         dashboard:  Dashboard identifier to publish (e.g. 'dlq_operations').
         client:     Optional client identifier for multi-client deployments.
     """
-    print(f"publisher run  env={env}  dashboard={dashboard}  client={client}")
+    client_id = client or "default"
+    env_id    = env
+    artifacts_runs_dir    = os.path.join(ARTIFACTS_BASE_DIR, client_id, env_id, "runs")
+    artifacts_current_dir = os.path.join(ARTIFACTS_BASE_DIR, client_id, env_id, "current")
+
+    print(f"publisher run  env={env_id}  dashboard={dashboard}  client={client_id}")
 
     # 1. Load dashboard configuration
     config = load_dashboard_config(dashboard)
@@ -349,8 +355,8 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     # Derive run_id from report_ts — strip non-alphanumeric characters.
     # e.g. "2026-03-07T22:49:59Z" → "20260307T224959Z"
     run_id = re.sub(r"[^a-zA-Z0-9]", "", report_ts)
-    run_dir = os.path.join(ARTIFACTS_RUNS_DIR, run_id, dashboard)
-    current_dir = os.path.join(ARTIFACTS_CURRENT_DIR, dashboard)
+    run_dir = os.path.join(artifacts_runs_dir, run_id, dashboard)
+    current_dir = os.path.join(artifacts_current_dir, dashboard)
 
     # 6. Build and validate manifest.json (artifact list sourced from dashboard config)
     manifest = {
@@ -395,11 +401,11 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
     print(f"  current folder : {current_dir}")
 
     # 10. Rebuild run history index.
-    _rebuild_run_history(generated_at)
+    _rebuild_run_history(generated_at, client_id=client_id, env_id=env_id)
 
 
 if __name__ == "__main__":
     # Compute report_ts once for the entire run.
     # All SQL metric windows and all artifact timestamps are anchored to these values.
     report_ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    run(report_ts, env="local", dashboard="dlq_operations", client=None)
+    run(report_ts, env="local", dashboard="dlq_operations", client="default")

@@ -1,0 +1,28 @@
+{
+  "exceptions": [
+    {
+      "count": 21,
+      "failure_type": "TIMEOUT"
+    },
+    {
+      "count": 20,
+      "failure_type": "PARSE_FAILURE"
+    },
+    {
+      "count": 19,
+      "failure_type": "AUTH_ERROR"
+    },
+    {
+      "count": 17,
+      "failure_type": "CONNECTION_RESET"
+    },
+    {
+      "count": 10,
+      "failure_type": "SCHEMA_MISMATCH"
+    }
+  ],
+  "generated_at": "2026-03-09T17:51:59+00:00",
+  "report_ts": "2026-03-09T17:51:59Z",
+  "schema_version": "1.2.0",
+  "window_days": 7
+}

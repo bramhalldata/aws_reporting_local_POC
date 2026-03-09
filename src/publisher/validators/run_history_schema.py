@@ -9,14 +9,16 @@ import jsonschema
 
 # SCHEMA_VERSION is a documentary constant for human reference and audit trail.
 # It is not enforced by the jsonschema validator — validation checks structure, not version.
-SCHEMA_VERSION = "1.1.0"
+SCHEMA_VERSION = "1.2.0"
 
 RUN_HISTORY_SCHEMA = {
     "type": "object",
-    "required": ["schema_version", "generated_at", "runs"],
+    "required": ["schema_version", "client_id", "env_id", "generated_at", "runs"],
     "additionalProperties": False,
     "properties": {
         "schema_version": {"type": "string"},
+        "client_id":      {"type": "string"},
+        "env_id":         {"type": "string"},
         "generated_at":   {"type": "string"},
         "runs": {
             "type": "array",
