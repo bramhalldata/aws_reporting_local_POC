@@ -27,6 +27,8 @@ For trivial changes (e.g., typo fixes, small UI tweaks), this process may be ski
 
 ---
 
+A review is not complete until the reviewer confirms the review artifact was written to docs/reviews/<feature>_review.md
+
 # Workflow
 
 The workflow consists of six phases.

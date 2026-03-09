@@ -115,7 +115,7 @@ def _rebuild_run_history(generated_at: str) -> None:
     On validation failure, logs a warning and returns without writing — dashboard
     artifacts are already committed at this point and should not be invalidated.
 
-    Phase 2 note: RunHistory.jsx fetches /run_history.json directly. When client/env
+    Phase 2 note: RunHistory.jsx fetches /current/run_history.json. When client/env
     scoping is introduced, adopt useArtifactPath for platform-level artifact paths.
     """
     runs = []
@@ -127,13 +127,24 @@ def _rebuild_run_history(generated_at: str) -> None:
             # Extract dashboard_id from path: runs/<run_id>/<dashboard_id>/manifest.json
             parts = os.path.normpath(manifest_path).split(os.sep)
             dashboard_id = parts[-2]
+            # Enrich bare artifact filenames (from manifest) into structured objects.
+            # type is derived by stripping .json — a future phase may define it explicitly
+            # in dashboard.json if a richer taxonomy is needed.
+            artifact_objects = [
+                {
+                    "name": filename,
+                    "type": filename.replace(".json", ""),
+                    "path": f"runs/{m['run_id']}/{dashboard_id}/{filename}",
+                }
+                for filename in m["artifacts"]
+            ]
             runs.append({
                 "run_id":         m["run_id"],
                 "dashboard_id":   dashboard_id,
                 "report_ts":      m["report_ts"],
                 "generated_at":   m["generated_at"],
                 "status":         m["status"],
-                "artifacts":      m["artifacts"],
+                "artifacts":      artifact_objects,
                 "schema_version": m["schema_version"],
             })
         except (KeyError, json.JSONDecodeError):
@@ -145,7 +156,7 @@ def _rebuild_run_history(generated_at: str) -> None:
     runs.sort(key=lambda r: r["run_id"], reverse=True)
 
     run_history = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "generated_at":   generated_at,
         "runs":           runs,
     }

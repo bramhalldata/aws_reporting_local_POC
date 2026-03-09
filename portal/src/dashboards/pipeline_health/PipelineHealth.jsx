@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { theme } from "../../theme/cashmereTheme";
+import { useArtifactPath } from "../../hooks/useArtifactPath.js";
 import HealthBanner from "../../components/HealthBanner.jsx";
 import KpiCard from "../../components/KpiCard.jsx";
 import ExceptionsTable from "../../components/ExceptionsTable.jsx";
@@ -20,8 +21,8 @@ const styles = {
 
 const DASHBOARD = "pipeline_health";
 
-async function loadArtifacts() {
-  const manifestRes = await fetch(`/${DASHBOARD}/manifest.json`);
+async function loadArtifacts(artifactPath) {
+  const manifestRes = await fetch(artifactPath("manifest.json"));
   if (!manifestRes.ok)
     throw new Error(
       `manifest.json not found (HTTP ${manifestRes.status}). ` +
@@ -39,7 +40,7 @@ async function loadArtifacts() {
   requireArtifact("failure_types.json");
 
   const fetchJson = async (filename) => {
-    const res = await fetch(`/${DASHBOARD}/${filename}`);
+    const res = await fetch(artifactPath(filename));
     if (!res.ok) throw new Error(`${filename} not found (HTTP ${res.status}).`);
     return res.json();
   };
@@ -52,11 +53,12 @@ async function loadArtifacts() {
 }
 
 export default function PipelineHealth() {
+  const artifactPath = useArtifactPath(DASHBOARD);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadArtifacts().then(setData).catch((err) => setError(err.message));
+    loadArtifacts(artifactPath).then(setData).catch((err) => setError(err.message));
   }, []);
 
   if (error)

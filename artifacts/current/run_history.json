@@ -1,12 +1,58 @@
 {
-  "generated_at": "2026-03-08T21:25:41+00:00",
+  "generated_at": "2026-03-09T13:33:06+00:00",
   "runs": [
     {
       "artifacts": [
-        "summary.json",
-        "trend_30d.json",
-        "top_sites.json",
-        "exceptions.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260309T133306Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "runs/20260309T133306Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "runs/20260309T133306Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "runs/20260309T133306Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
+      ],
+      "dashboard_id": "dlq_operations",
+      "generated_at": "2026-03-09T13:33:06+00:00",
+      "report_ts": "2026-03-09T13:33:06Z",
+      "run_id": "20260309T133306Z",
+      "schema_version": "1.1.0",
+      "status": "SUCCESS"
+    },
+    {
+      "artifacts": [
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T212541Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "runs/20260308T212541Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "runs/20260308T212541Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "runs/20260308T212541Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
       ],
       "dashboard_id": "dlq_operations",
       "generated_at": "2026-03-08T21:25:41+00:00",
@@ -17,10 +63,26 @@
     },
     {
       "artifacts": [
-        "summary.json",
-        "trend_30d.json",
-        "top_sites.json",
-        "exceptions.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T204840Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "runs/20260308T204840Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "runs/20260308T204840Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "runs/20260308T204840Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
       ],
       "dashboard_id": "dlq_operations",
       "generated_at": "2026-03-08T20:48:40+00:00",
@@ -31,8 +93,16 @@
     },
     {
       "artifacts": [
-        "summary.json",
-        "failure_types.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T204840Z/pipeline_health/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "failure_types.json",
+          "path": "runs/20260308T204840Z/pipeline_health/failure_types.json",
+          "type": "failure_types"
+        }
       ],
       "dashboard_id": "pipeline_health",
       "generated_at": "2026-03-08T20:48:40+00:00",
@@ -43,10 +113,26 @@
     },
     {
       "artifacts": [
-        "summary.json",
-        "trend_30d.json",
-        "top_sites.json",
-        "exceptions.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T164614Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "runs/20260308T164614Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "runs/20260308T164614Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "runs/20260308T164614Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
       ],
       "dashboard_id": "dlq_operations",
       "generated_at": "2026-03-08T16:46:14+00:00",
@@ -57,8 +143,16 @@
     },
     {
       "artifacts": [
-        "summary.json",
-        "failure_types.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T164550Z/pipeline_health/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "failure_types.json",
+          "path": "runs/20260308T164550Z/pipeline_health/failure_types.json",
+          "type": "failure_types"
+        }
       ],
       "dashboard_id": "pipeline_health",
       "generated_at": "2026-03-08T16:45:50+00:00",
@@ -69,10 +163,26 @@
     },
     {
       "artifacts": [
-        "summary.json",
-        "trend_30d.json",
-        "top_sites.json",
-        "exceptions.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T164354Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "runs/20260308T164354Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "runs/20260308T164354Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "runs/20260308T164354Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
       ],
       "dashboard_id": "dlq_operations",
       "generated_at": "2026-03-08T16:43:54+00:00",
@@ -83,8 +193,16 @@
     },
     {
       "artifacts": [
-        "summary.json",
-        "failure_types.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T164334Z/pipeline_health/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "failure_types.json",
+          "path": "runs/20260308T164334Z/pipeline_health/failure_types.json",
+          "type": "failure_types"
+        }
       ],
       "dashboard_id": "pipeline_health",
       "generated_at": "2026-03-08T16:43:34+00:00",
@@ -95,10 +213,26 @@
     },
     {
       "artifacts": [
-        "summary.json",
-        "trend_30d.json",
-        "top_sites.json",
-        "exceptions.json"
+        {
+          "name": "summary.json",
+          "path": "runs/20260308T124633Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "runs/20260308T124633Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "runs/20260308T124633Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "runs/20260308T124633Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
       ],
       "dashboard_id": "dlq_operations",
       "generated_at": "2026-03-08T12:46:33+00:00",
@@ -108,5 +242,5 @@
       "status": "SUCCESS"
     }
   ],
-  "schema_version": "1.0.0"
+  "schema_version": "1.1.0"
 }

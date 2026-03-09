@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { theme } from "../../theme/cashmereTheme";
+import { useArtifactPath } from "../../hooks/useArtifactPath.js";
 import HealthBanner from "../../components/HealthBanner.jsx";
 import KpiCard from "../../components/KpiCard.jsx";
 import TrendChart from "../../components/TrendChart.jsx";
@@ -57,9 +58,9 @@ const styles = {
 
 const DASHBOARD = "dlq_operations";
 
-async function loadArtifacts() {
+async function loadArtifacts(artifactPath) {
   // Step 1: load manifest to confirm pipeline status and discover artifacts
-  const manifestRes = await fetch(`/${DASHBOARD}/manifest.json`);
+  const manifestRes = await fetch(artifactPath("manifest.json"));
   if (!manifestRes.ok) {
     throw new Error(
       `manifest.json not found (HTTP ${manifestRes.status}). Run the publisher first: publisher run --env local --dashboard ${DASHBOARD}`
@@ -84,7 +85,7 @@ async function loadArtifacts() {
 
   // Step 2: load all payload artifacts
   const fetchJson = async (filename) => {
-    const res = await fetch(`/${DASHBOARD}/${filename}`);
+    const res = await fetch(artifactPath(filename));
     if (!res.ok) throw new Error(`${filename} not found (HTTP ${res.status}).`);
     return res.json();
   };
@@ -104,11 +105,12 @@ async function loadArtifacts() {
 // ---------------------------------------------------------------------------
 
 export default function DlqOperations() {
+  const artifactPath = useArtifactPath(DASHBOARD);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadArtifacts()
+    loadArtifacts(artifactPath)
       .then(setData)
       .catch((err) => setError(err.message));
   }, []);

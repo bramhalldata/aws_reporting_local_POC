@@ -10,6 +10,8 @@ The purpose of the REVIEW stage is to **critically evaluate a planning artifact 
 
 The review stage transforms planning output into a **first‑class artifact** that can be inspected, challenged, and approved before development proceeds.
 
+A review is not complete until the reviewer confirms the review artifact was written to docs/reviews/<feature>_review.md
+
 ---
 
 # Workflow Context

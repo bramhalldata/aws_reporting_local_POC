@@ -7,7 +7,9 @@ Schema changes must also be reflected in docs/json-contracts.md.
 
 import jsonschema
 
-SCHEMA_VERSION = "1.0.0"
+# SCHEMA_VERSION is a documentary constant for human reference and audit trail.
+# It is not enforced by the jsonschema validator — validation checks structure, not version.
+SCHEMA_VERSION = "1.1.0"
 
 RUN_HISTORY_SCHEMA = {
     "type": "object",
@@ -31,7 +33,19 @@ RUN_HISTORY_SCHEMA = {
                     "report_ts":      {"type": "string"},
                     "generated_at":   {"type": "string"},
                     "status":         {"type": "string", "enum": ["SUCCESS", "FAILURE"]},
-                    "artifacts":      {"type": "array", "items": {"type": "string"}},
+                    "artifacts": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["name", "type", "path"],
+                            "additionalProperties": False,
+                            "properties": {
+                                "name": {"type": "string"},
+                                "type": {"type": "string"},
+                                "path": {"type": "string"},
+                            },
+                        },
+                    },
                     "schema_version": {"type": "string"},
                 },
             },

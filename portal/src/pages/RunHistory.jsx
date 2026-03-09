@@ -106,7 +106,7 @@ const styles = {
 };
 
 async function loadHistory() {
-  const res = await fetch("/run_history.json");
+  const res = await fetch("/current/run_history.json");
   const contentType = res.headers.get("content-type") || "";
   // Vite dev server returns index.html (text/html, status 200) for missing static
   // files as an SPA fallback, so checking res.ok alone is not sufficient.
@@ -176,7 +176,7 @@ export default function RunHistory() {
                     <span style={styles.statusPill(run.status)}>{run.status}</span>
                   </td>
                   <td style={{ ...styles.td, ...styles.artifacts }}>
-                    {run.artifacts.join(", ")}
+                    {run.artifacts.map((a) => a.name).join(", ")}
                   </td>
                   <td style={styles.td}>
                     <Link

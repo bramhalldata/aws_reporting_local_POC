@@ -1,13 +1,16 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// publicDir points to artifacts/current/ so that summary.json, manifest.json,
-// etc. are served at /summary.json, /manifest.json, etc. without copying or
-// proxying. The publisher always keeps current/ in sync with the latest run.
+// publicDir points to artifacts/ so that both the current-run tree and the
+// historical-run tree are served from the same root:
 //
-// In production, these files are served from S3 via CloudFront using the
-// artifacts/current/ prefix.
+//   /current/<dashboardId>/<filename>   ← current run artifacts (useArtifactPath)
+//   /runs/<runId>/<dashboardId>/<filename> ← historical run artifacts (RunDetail links)
+//   /current/run_history.json           ← run history index
+//
+// In production, artifacts/ is synced to S3 and served via CloudFront under
+// the same prefix structure — both current/ and runs/ are in scope.
 export default defineConfig({
   plugins: [react()],
-  publicDir: "../artifacts/current",
+  publicDir: "../artifacts",
 });

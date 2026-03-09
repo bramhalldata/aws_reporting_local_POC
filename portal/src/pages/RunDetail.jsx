@@ -2,17 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 
-// Route: /history/:runId/:dashboardId
+// Route: /history/:runId/:dashboardId  (stable contract — do not change)
 //
-// Route stability: this URL is a stable contract. When the Artifact File Serving Expansion
-// is implemented, RunDetail internals will be updated to add clickable artifact file links,
-// but the route path itself must not change.
-//
-// Data source: run_history.json is the canonical source for both the Run History list view
-// and this detail view. No additional artifact fetches are made here.
-//
-// Artifact file links are NOT available in this phase. They are deferred to the
-// Artifact File Serving Expansion (publicDir migration).
+// Data source: /current/run_history.json — canonical source for both list and detail views.
+// Artifact objects carry { name, type, path } since run_history.json schema v1.1.0.
+// Clickable artifact links resolve to /<artifact.path> (e.g. /runs/<runId>/<dashboardId>/<name>),
+// served from the artifacts/ publicDir tree.
 
 const styles = {
   page: {
@@ -111,16 +106,11 @@ const styles = {
     fontSize: "0.875rem",
     color: theme.textSecondary,
   },
-  artifactCode: {
+  artifactLink: {
     fontFamily: "monospace",
     fontSize: "0.85rem",
-    color: theme.textPrimary,
-  },
-  deferralNote: {
-    marginTop: "0.75rem",
-    fontSize: "0.8rem",
-    color: theme.textMuted,
-    fontStyle: "italic",
+    color: theme.navActiveText,
+    textDecoration: "none",
   },
   warningsNote: {
     fontSize: "0.875rem",
@@ -139,7 +129,7 @@ const styles = {
 };
 
 async function loadRun(runId, dashboardId) {
-  const res = await fetch("/run_history.json");
+  const res = await fetch("/current/run_history.json");
   const contentType = res.headers.get("content-type") || "";
   // Vite SPA fallback returns index.html with status 200 for missing static files.
   if (!res.ok || !contentType.includes("application/json")) {
@@ -219,16 +209,19 @@ export default function RunDetail() {
       <div style={styles.card}>
         <div style={styles.cardTitle}>Artifacts</div>
         <ul style={styles.artifactList}>
-          {run.artifacts.map((filename) => (
-            <li key={filename} style={styles.artifactItem}>
-              <code style={styles.artifactCode}>{filename}</code>
+          {run.artifacts.map((artifact) => (
+            <li key={artifact.name} style={styles.artifactItem}>
+              <a
+                href={`/${artifact.path}`}
+                style={styles.artifactLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {artifact.name}
+              </a>
             </li>
           ))}
         </ul>
-        <p style={styles.deferralNote}>
-          Clickable file links are not yet available. They will be added as part of the
-          Artifact File Serving Expansion.
-        </p>
       </div>
 
       {/* Warnings */}
