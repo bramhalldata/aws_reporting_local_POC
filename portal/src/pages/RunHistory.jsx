@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
-
-// Phase 2 note: replace direct fetch path with useArtifactPath when client/env
-// scoping is introduced. The hook is the correct extension point for platform-level
-// artifact paths (see docs/reviews/run_history_ui_review.md §3.3).
 
 const styles = {
   page: {
@@ -105,8 +101,8 @@ const styles = {
   },
 };
 
-async function loadHistory() {
-  const res = await fetch("/current/run_history.json");
+async function loadHistory(client, env) {
+  const res = await fetch(`/${client}/${env}/current/run_history.json`);
   const contentType = res.headers.get("content-type") || "";
   // Vite dev server returns index.html (text/html, status 200) for missing static
   // files as an SPA fallback, so checking res.ok alone is not sufficient.
@@ -123,12 +119,13 @@ function formatTs(isoString) {
 }
 
 export default function RunHistory() {
+  const { client, env } = useParams();
   const [history, setHistory] = useState(null);
   const [error, setError]     = useState(null);
 
   useEffect(() => {
-    loadHistory().then(setHistory).catch((err) => setError(err.message));
-  }, []);
+    loadHistory(client, env).then(setHistory).catch((err) => setError(err.message));
+  }, [client, env]);
 
   if (error)
     return <div style={styles.page}><div style={styles.errorBox}>Error: {error}</div></div>;
@@ -180,7 +177,7 @@ export default function RunHistory() {
                   </td>
                   <td style={styles.td}>
                     <Link
-                      to={`/history/${run.run_id}/${run.dashboard_id}`}
+                      to={`/${client}/${env}/history/${run.run_id}/${run.dashboard_id}`}
                       style={styles.viewLink}
                     >
                       View →

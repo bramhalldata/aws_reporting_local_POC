@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 
-// Route: /history/:runId/:dashboardId  (stable contract — do not change)
+// Route: /:client/:env/history/:runId/:dashboardId  (stable contract — do not change)
 //
-// Data source: /current/run_history.json — canonical source for both list and detail views.
+// Data source: /{client}/{env}/current/run_history.json — canonical source for both list and detail views.
 // Artifact objects carry { name, type, path } since run_history.json schema v1.1.0.
-// Clickable artifact links resolve to /<artifact.path> (e.g. /runs/<runId>/<dashboardId>/<name>),
-// served from the artifacts/ publicDir tree.
+// Clickable artifact links resolve to /<artifact.path> (e.g. /{client}/{env}/runs/<runId>/<dashboardId>/<name>),
+// served from the artifacts/ publicDir tree. artifact.path is publisher-owned — no portal computation.
 
 const styles = {
   page: {
@@ -128,8 +128,8 @@ const styles = {
   loading: { color: theme.textSecondary, fontSize: "0.95rem" },
 };
 
-async function loadRun(runId, dashboardId) {
-  const res = await fetch("/current/run_history.json");
+async function loadRun(client, env, runId, dashboardId) {
+  const res = await fetch(`/${client}/${env}/current/run_history.json`);
   const contentType = res.headers.get("content-type") || "";
   // Vite SPA fallback returns index.html with status 200 for missing static files.
   if (!res.ok || !contentType.includes("application/json")) {
@@ -156,15 +156,15 @@ function formatTs(isoString) {
 }
 
 export default function RunDetail() {
-  const { runId, dashboardId } = useParams();
+  const { client, env, runId, dashboardId } = useParams();
   const [run, setRun]     = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadRun(runId, dashboardId).then(setRun).catch((err) => setError(err.message));
-  }, [runId, dashboardId]);
+    loadRun(client, env, runId, dashboardId).then(setRun).catch((err) => setError(err.message));
+  }, [client, env, runId, dashboardId]);
 
-  const backLink = <Link to="/history" style={styles.backLink}>← Run History</Link>;
+  const backLink = <Link to={`/${client}/${env}/history`} style={styles.backLink}>← Run History</Link>;
 
   if (error)
     return (

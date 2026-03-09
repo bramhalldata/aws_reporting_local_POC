@@ -1,18 +1,20 @@
+import { useParams } from "react-router-dom";
+
 /**
  * useArtifactPath — returns a path resolver for dashboard artifact fetches.
  *
- * Phase 1: returns the path /current/<dashboardId>/<filename>
- *   Aligns with publicDir: ../artifacts — current-run artifacts are under /current/.
+ * Derives client and env from the /:client/:env route params, returning
+ * /{client}/{env}/current/{dashboardId}/{filename}.
  *
- * Phase 2: will accept clientId and env, returning /<clientId>/<env>/current/<dashboardId>/<filename>
- *   No component changes required — only this hook needs updating.
- *
- * New dashboard components should use this hook instead of constructing paths directly.
+ * Dashboard components pass the result to loadArtifacts() — they require no
+ * changes when client/env context changes.
  *
  * Example:
  *   const path = useArtifactPath("dlq_operations");
- *   const res = await fetch(path("manifest.json")); // → /current/dlq_operations/manifest.json
+ *   const res = await fetch(path("manifest.json"));
+ *   // → /default/local/current/dlq_operations/manifest.json
  */
 export function useArtifactPath(dashboardId) {
-  return (filename) => `/current/${dashboardId}/${filename}`;
+  const { client, env } = useParams();
+  return (filename) => `/${client}/${env}/current/${dashboardId}/${filename}`;
 }

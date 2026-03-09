@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { dashboards, dashboardMeta } from "../dashboards/index.js";
 
@@ -64,6 +64,7 @@ const styles = {
 };
 
 export default function NavBar() {
+  const { client, env } = useParams();
   return (
     <nav style={styles.nav}>
       <span style={styles.brand}>Reporting Platform</span>
@@ -71,7 +72,7 @@ export default function NavBar() {
         {dashboardMeta.map(({ id, label }) => (
           <NavLink
             key={id}
-            to={`/${id}`}
+            to={`/${client}/${env}/${id}`}
             style={({ isActive }) => styles.tab(isActive)}
           >
             {label}
@@ -80,7 +81,7 @@ export default function NavBar() {
       </div>
       <div style={styles.platformLinks}>
         <NavLink
-          to="/history"
+          to={`/${client}/${env}/history`}
           style={({ isActive }) => styles.tab(isActive)}
         >
           History
