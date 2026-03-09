@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 
 // Phase 2 note: replace direct fetch path with useArtifactPath when client/env
@@ -81,6 +82,12 @@ const styles = {
     fontSize: "0.8rem",
     color: theme.textMuted,
   },
+  viewLink: {
+    fontSize: "0.8rem",
+    color: theme.navActiveText,
+    textDecoration: "none",
+    fontWeight: 500,
+  },
   errorBox: {
     background: theme.errorBg,
     border: `1px solid ${theme.errorBorder}`,
@@ -154,6 +161,7 @@ export default function RunHistory() {
                 <th style={styles.th}>Report Time</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Artifacts</th>
+                <th style={styles.th}>Detail</th>
               </tr>
             </thead>
             <tbody>
@@ -169,6 +177,14 @@ export default function RunHistory() {
                   </td>
                   <td style={{ ...styles.td, ...styles.artifacts }}>
                     {run.artifacts.join(", ")}
+                  </td>
+                  <td style={styles.td}>
+                    <Link
+                      to={`/history/${run.run_id}/${run.dashboard_id}`}
+                      style={styles.viewLink}
+                    >
+                      View →
+                    </Link>
                   </td>
                 </tr>
               ))}

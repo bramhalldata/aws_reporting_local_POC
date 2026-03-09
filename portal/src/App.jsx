@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { dashboards, dashboardMeta } from "./dashboards/index.js";
 import AppShell from "./AppShell.jsx";
 import RunHistory from "./pages/RunHistory.jsx";
+import RunDetail from "./pages/RunDetail.jsx";
 
 // Registry-driven default: first entry in dashboardMeta.
 // Changing the first entry in dashboardMeta changes the default landing page.
@@ -16,6 +17,7 @@ export default function App() {
         {Object.entries(dashboards).map(([id, Component]) => (
           <Route key={id} path={`/${id}`} element={<Component />} />
         ))}
+        <Route path="/history/:runId/:dashboardId" element={<RunDetail />} />
         <Route path="/history" element={<RunHistory />} />
         <Route path="*" element={<Navigate to={defaultPath} replace />} />
       </Route>
