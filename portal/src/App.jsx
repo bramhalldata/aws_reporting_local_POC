@@ -4,6 +4,7 @@ import { dashboards, dashboardMeta } from "./dashboards/index.js";
 import AppShell from "./AppShell.jsx";
 import RunHistory from "./pages/RunHistory.jsx";
 import RunDetail from "./pages/RunDetail.jsx";
+import RunCompare from "./pages/RunCompare.jsx";
 
 const DEFAULT_CLIENT = "default";
 const DEFAULT_ENV    = "local";
@@ -33,6 +34,9 @@ function LegacyRunDetailRedirect() {
 
 // Router shell — /:client/:env parent wraps all routes in AppShell.
 // Dashboard routes are relative (no leading /) inside the parent.
+//
+// history/compare uses a literal segment so React Router v6 rank-based
+// matching selects it over the dynamic :runId segment automatically.
 export default function App() {
   return (
     <Routes>
@@ -40,6 +44,7 @@ export default function App() {
         {Object.entries(dashboards).map(([id, Component]) => (
           <Route key={id} path={id} element={<Component />} />
         ))}
+        <Route path="history/compare" element={<RunCompare />} />
         <Route path="history/:runId/:dashboardId" element={<RunDetail />} />
         <Route path="history" element={<RunHistory />} />
         <Route path="*" element={<Navigate to={defaultDashboard} replace />} />

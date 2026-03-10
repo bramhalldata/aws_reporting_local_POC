@@ -166,6 +166,13 @@ export default function RunDetail() {
 
   const backLink = <Link to={`/${client}/${env}/history`} style={styles.backLink}>← Run History</Link>;
 
+  // Compare entry point: navigates to history with this run pre-selected as base.
+  // The user then picks the target run from the list.
+  const compareParams = new URLSearchParams({ compareBase: run?.run_id ?? "", compareDashboard: run?.dashboard_id ?? "" });
+  const compareLink = run
+    ? <Link to={`/${client}/${env}/history?${compareParams.toString()}`} style={{ ...styles.backLink, marginLeft: "1.5rem" }}>Compare with another run →</Link>
+    : null;
+
   if (error)
     return (
       <div style={styles.page}>
@@ -178,7 +185,7 @@ export default function RunDetail() {
 
   return (
     <div style={styles.page}>
-      {backLink}
+      <div>{backLink}{compareLink}</div>
 
       <header style={styles.header}>
         <div style={styles.titleRow}>
