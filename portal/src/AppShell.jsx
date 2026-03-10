@@ -1,10 +1,10 @@
-import { Outlet, useParams } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import NavBar from "./components/NavBar.jsx";
+import ClientEnvSelector from "./components/ClientEnvSelector.jsx";
 import { theme } from "./theme/cashmereTheme";
 
 // Layout shell — identity bar (client/env context) + NavBar + Outlet.
 export default function AppShell() {
-  const { client, env } = useParams();
   return (
     <div>
       <div style={{
@@ -13,8 +13,12 @@ export default function AppShell() {
         padding: "0.3rem 1.5rem",
         fontSize: "0.75rem",
         color: theme.textMuted,
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
       }}>
-        {client} / {env}
+        <ClientEnvSelector />
+        <span>Client / Environment</span>
       </div>
       <NavBar />
       <Outlet />

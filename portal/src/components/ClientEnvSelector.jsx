@@ -1,0 +1,67 @@
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { SCOPES } from "../config/scopes.js";
+import { dashboardMeta } from "../dashboards/index.js";
+import { targetUrl, resolveEnv } from "../utils/selectorNav.js";
+import { theme } from "../theme/cashmereTheme.js";
+
+const dashboardIds = dashboardMeta.map(d => d.id);
+
+const styles = {
+  wrapper: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.25rem",
+  },
+  select: {
+    fontSize: "0.75rem",
+    color: theme.textPrimary,
+    background: theme.surface,
+    border: `1px solid ${theme.border}`,
+    borderRadius: "4px",
+    padding: "0.1rem 0.25rem",
+    cursor: "pointer",
+  },
+  separator: {
+    fontSize: "0.75rem",
+    color: theme.textMuted,
+  },
+};
+
+export default function ClientEnvSelector() {
+  const { client, env } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const clients = SCOPES.map(s => s.client);
+  const currentEntry = SCOPES.find(s => s.client === client);
+  const envs = currentEntry?.envs ?? (env ? [env] : []);
+
+  function handleClientChange(e) {
+    const newClient = e.target.value;
+    const newClientEntry = SCOPES.find(s => s.client === newClient);
+    const newEnv = resolveEnv(newClientEntry, env);
+    if (newEnv === null) return; // guard: empty envs — no-op
+    navigate(targetUrl(newClient, newEnv, client, env, location.pathname, dashboardIds));
+  }
+
+  function handleEnvChange(e) {
+    const newEnv = e.target.value;
+    navigate(targetUrl(client, newEnv, client, env, location.pathname, dashboardIds));
+  }
+
+  return (
+    <div style={styles.wrapper}>
+      <select style={styles.select} value={client} onChange={handleClientChange}>
+        {clients.map(c => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </select>
+      <span style={styles.separator}>/</span>
+      <select style={styles.select} value={env} onChange={handleEnvChange}>
+        {envs.map(e => (
+          <option key={e} value={e}>{e}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
