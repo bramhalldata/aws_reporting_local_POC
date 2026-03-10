@@ -1,8 +1,38 @@
 {
   "client_id": "default",
   "env_id": "local",
-  "generated_at": "2026-03-09T18:05:45+00:00",
+  "generated_at": "2026-03-10T18:11:11+00:00",
   "runs": [
+    {
+      "artifacts": [
+        {
+          "name": "summary.json",
+          "path": "default/local/runs/20260310T181111Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "default/local/runs/20260310T181111Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "default/local/runs/20260310T181111Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "default/local/runs/20260310T181111Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
+      ],
+      "dashboard_id": "dlq_operations",
+      "generated_at": "2026-03-10T18:11:11+00:00",
+      "report_ts": "2026-03-10T18:11:11Z",
+      "run_id": "20260310T181111Z",
+      "schema_version": "1.2.0",
+      "status": "SUCCESS"
+    },
     {
       "artifacts": [
         {

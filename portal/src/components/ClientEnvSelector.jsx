@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { SCOPES } from "../config/scopes.js";
+import { usePlatformManifest } from "../hooks/usePlatformManifest.js";
 import { dashboardMeta } from "../dashboards/index.js";
 import { targetUrl, resolveEnv } from "../utils/selectorNav.js";
 import { theme } from "../theme/cashmereTheme.js";
@@ -29,17 +29,27 @@ const styles = {
 
 export default function ClientEnvSelector() {
   const { client, env } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { scopes }      = usePlatformManifest();
+  const navigate        = useNavigate();
+  const location        = useLocation();
 
-  const clients = SCOPES.map(s => s.client);
-  const currentEntry = SCOPES.find(s => s.client === client);
-  const envs = currentEntry?.envs ?? (env ? [env] : []);
+  // While loading (scopes === null) or on error, fall back to current URL scope.
+  // Also ensure current client always appears even if manifest resolved but is empty
+  // or does not yet include the active scope (e.g., first load before manifest generated).
+  const resolved        = scopes ?? [];
+  const effectiveScopes = resolved.some(s => s.client === client)
+    ? resolved
+    : [{ client, envs: [env] }, ...resolved];
+
+  const clients      = effectiveScopes.map(s => s.client);
+  const currentEntry = effectiveScopes.find(s => s.client === client)
+    ?? { client, envs: [env] };
+  const envs = currentEntry.envs;
 
   function handleClientChange(e) {
-    const newClient = e.target.value;
-    const newClientEntry = SCOPES.find(s => s.client === newClient);
-    const newEnv = resolveEnv(newClientEntry, env);
+    const newClient      = e.target.value;
+    const newClientEntry = effectiveScopes.find(s => s.client === newClient);
+    const newEnv         = resolveEnv(newClientEntry, env);
     if (newEnv === null) return; // guard: empty envs — no-op
     navigate(targetUrl(newClient, newEnv, client, env, location.pathname, dashboardIds));
   }

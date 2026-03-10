@@ -179,6 +179,90 @@ def _rebuild_run_history(generated_at: str, *, client_id: str, env_id: str) -> N
 
 
 # ---------------------------------------------------------------------------
+# Platform manifest — global capability registry
+# ---------------------------------------------------------------------------
+
+def _rebuild_platform_manifest(generated_at: str) -> None:
+    """Scan all scoped run_history.json files and rebuild artifacts/platform-manifest.json.
+
+    Called at the end of every publisher run, after _rebuild_run_history().
+    Uses a 2-wildcard glob (artifacts/{client}/{env}/current/run_history.json) which
+    correctly targets only v1.2.0 scoped histories — root-level legacy files are excluded.
+
+    The manifest reflects actual artifact presence on disk, not portal scopes config.
+    A scope configured in the portal but not bootstrapped does not appear here.
+
+    Phase 1 note: this function is called once per dashboard during a bootstrap run.
+    All calls are idempotent; the overhead is negligible at current scale.
+    A future optimization is to call this once after the loop in bootstrap() by adding
+    a skip_platform_manifest flag to run().
+    """
+    clients_map: dict[str, dict[str, list]] = {}
+
+    pattern = os.path.join(ARTIFACTS_BASE_DIR, "*", "*", "current", "run_history.json")
+    for history_path in sorted(glob.glob(pattern)):
+        # Extract client_id and env_id from path.
+        # Path structure: .../artifacts/{client}/{env}/current/run_history.json
+        # os.path.normpath converts separators to os.sep before splitting.
+        parts     = os.path.normpath(history_path).split(os.sep)
+        env_id    = parts[-3]
+        client_id = parts[-4]
+
+        try:
+            with open(history_path, encoding="utf-8") as f:
+                hist = json.load(f)
+            if not isinstance(hist.get("runs"), list):
+                continue  # skip scopes with malformed run_history
+        except (json.JSONDecodeError, OSError):
+            continue  # skip unreadable or malformed files
+
+        # Collect the latest successful run per dashboard.
+        # Runs are already sorted most-recent-first by _rebuild_run_history().
+        seen: dict[str, dict] = {}
+        for run in hist["runs"]:
+            dashboard_id = run.get("dashboard_id")
+            if not dashboard_id or run.get("status") != "SUCCESS":
+                continue
+            if dashboard_id not in seen:
+                seen[dashboard_id] = {
+                    "dashboard_id":   dashboard_id,
+                    "latest_run_id":  run["run_id"],
+                    "artifact_types": sorted(a["type"] for a in run.get("artifacts", [])),
+                }
+
+        dashboards = sorted(seen.values(), key=lambda d: d["dashboard_id"])
+        if client_id not in clients_map:
+            clients_map[client_id] = {}
+        clients_map[client_id][env_id] = dashboards
+
+    clients = [
+        {
+            "client_id": cid,
+            "envs": [
+                {"env_id": eid, "dashboards": clients_map[cid][eid]}
+                for eid in sorted(clients_map[cid])
+            ],
+        }
+        for cid in sorted(clients_map)
+    ]
+
+    manifest = {
+        "schema_version": "1.0.0",
+        "generated_at":   generated_at,
+        "clients":        clients,
+    }
+
+    # Written to artifacts/ root — a static, global URL served by Vite and CloudFront.
+    # Future production note: ensure appropriate cache-control headers for this file.
+    manifest_path = os.path.join(ARTIFACTS_BASE_DIR, "platform-manifest.json")
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, sort_keys=True)
+
+    scope_count = sum(len(clients_map[c]) for c in clients_map)
+    print(f"  platform-manifest: {manifest_path} ({len(clients)} client(s), {scope_count} scope(s))")
+
+
+# ---------------------------------------------------------------------------
 # Dashboard discovery
 # ---------------------------------------------------------------------------
 
@@ -489,6 +573,12 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
 
     # 10. Rebuild run history index.
     _rebuild_run_history(generated_at, client_id=client_id, env_id=env_id)
+
+    # 11. Rebuild global platform manifest.
+    # Called once per dashboard; during bootstrap this triggers N rebuilds (one per dashboard).
+    # All rebuilds are idempotent and fast at current scale. See bootstrap() for future
+    # optimization note.
+    _rebuild_platform_manifest(generated_at)
 
 
 if __name__ == "__main__":
