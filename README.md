@@ -18,7 +18,7 @@ This POC maps directly to the production architecture:
 | `sql/athena_views.sql` | AWS Athena reporting views / named queries |
 | DuckDB in-memory | AWS Athena query engine |
 | `src/publisher/main.py` | Publisher service (ECS / Fargate / Batch) |
-| `artifacts/summary.json`, `artifacts/manifest.json` | S3 artifact bucket |
+| `artifacts/{client}/{env}/` | S3 artifact bucket (client/env scoped) |
 | Vite dev server | CloudFront + S3 static hosting |
 | `portal/src/App.jsx` | React portal via CloudFront |
 
@@ -30,8 +30,8 @@ This POC maps directly to the production architecture:
    reads it through DuckDB (locally) or Athena (production).
 3. **Publisher generates deterministic artifacts** — each run produces the same output for
    the same input. `report_ts` is fixed once at run start; all SQL windows are relative to it.
-4. **JSON artifacts are the portal contract** — the portal loads `manifest.json` then
-   `summary.json`; it never computes metrics.
+4. **JSON artifacts are the portal contract** — the portal loads artifacts from the scoped
+   path `/{client}/{env}/current/{dashboard}/`; it never computes metrics.
 5. **Portal is presentation-only** — the React app renders artifact data and nothing else.
 
 ---
@@ -80,6 +80,7 @@ Output: `data/parquet/ccd_failures.parquet` (200 rows, 5 sites, 10-day window)
 
 ```bash
 publisher run --env local --dashboard dlq_operations
+publisher run --env local --dashboard pipeline_health
 ```
 
 **`--env local`** runs the local POC stack: DuckDB in-memory with
@@ -87,12 +88,14 @@ publisher run --env local --dashboard dlq_operations
 AWS Athena + S3 Parquet gold tables. Future `--env` values (e.g. `prod`) will route the
 same `run()` function to real Athena and S3.
 
-Output:
-- `artifacts/manifest.json`
-- `artifacts/summary.json`
-- `artifacts/trend_30d.json`
-- `artifacts/top_sites.json`
-- `artifacts/exceptions.json`
+Artifacts are written to the `default/local` scope (the local development default):
+
+```
+artifacts/default/local/current/dlq_operations/   ← dashboard artifacts (current run)
+artifacts/default/local/current/pipeline_health/
+artifacts/default/local/current/run_history.json  ← run history index
+artifacts/default/local/runs/{run_id}/             ← immutable historical snapshots
+```
 
 #### Legacy path (no editable install required)
 
@@ -111,10 +114,35 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Open [http://localhost:5173/default/local/dlq_operations](http://localhost:5173/default/local/dlq_operations)
 
-The portal loads `manifest.json` to confirm pipeline status, then loads all artifacts
-to render the dashboard.
+The root URL (`http://localhost:5173`) redirects automatically to the default client/env.
+
+Example URLs:
+
+| URL | Dashboard |
+|-----|-----------|
+| `http://localhost:5173/default/local/dlq_operations` | DLQ Operations |
+| `http://localhost:5173/default/local/pipeline_health` | Pipeline Health |
+| `http://localhost:5173/default/local/history` | Run History |
+
+---
+
+## Multi-Client & Multi-Environment Routing
+
+The portal uses URL-prefix routing: `/:client/:env/<dashboard>`.
+
+To publish artifacts for a different client or environment:
+
+```bash
+publisher run --client contexture --env prod --dashboard dlq_operations
+```
+
+Artifacts are written to `artifacts/contexture/prod/` and served at `/contexture/prod/...`.
+Navigate to `http://localhost:5173/contexture/prod/dlq_operations` in the portal.
+
+Legacy bookmarks (pre-v1.2.0 paths without `/{client}/{env}`) redirect automatically
+to `/default/local/...`.
 
 ---
 
@@ -139,13 +167,22 @@ aws_reporting_POC/
 │   └── publisher/
 │       ├── main.py                    # Publisher entry point
 │       └── validators/
+│           ├── run_history_schema.py  # JSON Schema for run_history.json (v1.2.0)
 │           ├── summary_schema.py      # JSON Schema for summary.json
-│           └── manifest_schema.py     # JSON Schema for manifest.json
+│           ├── manifest_schema.py     # JSON Schema for manifest.json
+│           └── ...                   # Per-dashboard artifact schemas
 │
 ├── artifacts/
 │   ├── .gitkeep
-│   ├── summary.json                   # Generated (gitignored)
-│   └── manifest.json                  # Generated (gitignored)
+│   └── default/local/                 # Generated (gitignored)
+│       ├── current/
+│       │   ├── run_history.json
+│       │   ├── dlq_operations/
+│       │   └── pipeline_health/
+│       └── runs/
+│           └── {run_id}/
+│               ├── dlq_operations/
+│               └── pipeline_health/
 │
 ├── portal/
 │   ├── package.json
@@ -153,11 +190,27 @@ aws_reporting_POC/
 │   ├── index.html
 │   └── src/
 │       ├── main.jsx
-│       └── App.jsx                    # Dashboard: manifest → summary → render
+│       ├── App.jsx                    # Routes: /:client/:env/*
+│       ├── AppShell.jsx               # Identity bar + NavBar + Outlet
+│       ├── theme/
+│       ├── components/
+│       │   └── NavBar.jsx
+│       ├── hooks/
+│       │   └── useArtifactPath.js     # Artifact URL resolver
+│       ├── dashboards/
+│       │   ├── index.js               # Dashboard registry
+│       │   ├── dlq_operations/
+│       │   └── pipeline_health/
+│       └── pages/
+│           ├── RunHistory.jsx
+│           └── RunDetail.jsx
 │
 └── docs/
     ├── claude-startup-guide.md
-    └── ...
+    ├── json-contracts.md
+    └── architecture/
+        ├── artifact-layout.md
+        └── portal-routing.md
 ```
 
 ---
@@ -167,12 +220,15 @@ aws_reporting_POC/
 After running steps 1–3:
 
 ```bash
-# Confirm both artifacts exist and are valid JSON
-cat artifacts/manifest.json
-cat artifacts/summary.json
+# Confirm run history index exists and is valid JSON
+cat artifacts/default/local/current/run_history.json
+
+# Confirm dashboard artifacts exist
+cat artifacts/default/local/current/dlq_operations/manifest.json
+cat artifacts/default/local/current/dlq_operations/summary.json
 ```
 
-Sanity check: `failures_last_7d` should be greater than or equal to `failures_last_24h`.
+Sanity check: in `summary.json`, `failures_last_7d` should be greater than or equal to `failures_last_24h`.
 
 To test SQL block validation:
 
@@ -186,31 +242,6 @@ python src/publisher/main.py
 
 ## Artifact Contracts
 
-### artifacts/manifest.json
-
-```json
-{
-  "artifacts": ["summary.json"],
-  "generated_at": "2026-03-07T12:00:00+00:00",
-  "schema_version": "1.0.0",
-  "status": "ok"
-}
-```
-
-### artifacts/summary.json
-
-```json
-{
-  "failures_last_24h": 18,
-  "failures_last_7d": 143,
-  "generated_at": "2026-03-07T12:00:00+00:00",
-  "report_ts": "2026-03-07T12:00:00Z",
-  "schema_version": "1.0.0",
-  "top_sites": [
-    {"failures": 35, "site": "site_alpha"},
-    {"failures": 29, "site": "site_bravo"}
-  ]
-}
-```
+See [docs/json-contracts.md](docs/json-contracts.md) for complete schema documentation.
 
 Schema changes require updates to the validators and `docs/json-contracts.md`.
