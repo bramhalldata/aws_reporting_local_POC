@@ -1,0 +1,11 @@
+{
+  "artifacts": [
+    "summary.json",
+    "failure_types.json"
+  ],
+  "generated_at": "2026-03-10T16:47:47+00:00",
+  "report_ts": "2026-03-10T16:47:47Z",
+  "run_id": "20260310T164747Z",
+  "schema_version": "1.2.0",
+  "status": "SUCCESS"
+}

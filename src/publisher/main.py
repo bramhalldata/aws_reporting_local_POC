@@ -179,6 +179,93 @@ def _rebuild_run_history(generated_at: str, *, client_id: str, env_id: str) -> N
 
 
 # ---------------------------------------------------------------------------
+# Dashboard discovery
+# ---------------------------------------------------------------------------
+
+def discover_dashboards() -> list[str]:
+    """Return sorted list of dashboard IDs found in DASHBOARDS_DIR.
+
+    A valid dashboard directory contains a dashboard.json config file.
+    Stays in sync with load_dashboard_config() — both use DASHBOARDS_DIR as
+    the canonical source, so no separate dashboard list is needed.
+    """
+    ids = []
+    for name in sorted(os.listdir(DASHBOARDS_DIR)):
+        config_path = os.path.join(DASHBOARDS_DIR, name, "dashboard.json")
+        if os.path.isfile(config_path):
+            ids.append(name)
+    return ids
+
+
+# ---------------------------------------------------------------------------
+# Bootstrap — initialize a full client/env scope
+# ---------------------------------------------------------------------------
+
+def bootstrap(*, env: str, client: str | None = None) -> None:
+    """Initialize a full client/env scope by running all discovered dashboards.
+
+    Uses a shared report_ts so all dashboards produce the same run_id and
+    appear as a coherent group in run_history.json.
+
+    Continues past individual dashboard failures and prints a summary at the
+    end. Exits 0 if all dashboards succeeded, 1 if any failed.
+    """
+    client_id = client or "default"
+    env_id    = env
+
+    report_ts = (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+    run_id = re.sub(r"[^a-zA-Z0-9]", "", report_ts)
+
+    dashboards_list = discover_dashboards()
+    n = len(dashboards_list)
+    print(f"Bootstrapping scope {client_id}/{env_id} -- {n} dashboard(s)  run_id={run_id}")
+
+    # Note: run() calls _rebuild_run_history() at the end of each dashboard.
+    # With N dashboards this triggers N rebuilds. All are idempotent and fast
+    # for the current dashboard count. Future optimization: add a
+    # skip_history_rebuild flag to run() and call _rebuild_run_history() once
+    # after the loop.
+    results = []
+    for i, dashboard_id in enumerate(dashboards_list, start=1):
+        print(f"  [{i}/{n}] {dashboard_id} ...")
+        try:
+            run(report_ts, env=env_id, dashboard=dashboard_id, client=client_id)
+            results.append((dashboard_id, True))
+        except SystemExit:
+            results.append((dashboard_id, False))
+
+    succeeded = sum(1 for _, ok in results if ok)
+    failed    = n - succeeded
+
+    print(f"\nBootstrap complete -- {succeeded}/{n} dashboard(s) succeeded.")
+    for dashboard_id, ok in results:
+        mark = "OK  " if ok else "FAIL"
+        print(f"  {mark} {dashboard_id}")
+
+    history_path = os.path.join(
+        ARTIFACTS_BASE_DIR, client_id, env_id, "current", "run_history.json"
+    )
+    print(f"\n  run_id  : {run_id}")
+    print(f"  scope   : {client_id}/{env_id}")
+    print(f"  history : {history_path}")
+
+    if failed:
+        print(f"\n{failed} dashboard(s) failed. Re-run individually with:")
+        for dashboard_id, ok in results:
+            if not ok:
+                print(
+                    f"  publisher run --client {client_id} --env {env_id}"
+                    f" --dashboard {dashboard_id}"
+                )
+        sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
 # Publisher pipeline
 # ---------------------------------------------------------------------------
 

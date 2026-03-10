@@ -7,6 +7,8 @@ Usage (after pip install -e .):
     publisher run --env local --dashboard dlq_operations
     publisher run --env local --dashboard dlq_operations --client acme_health
 
+    publisher bootstrap --client contexture --env local
+
 --env local   : Uses the local POC stack (DuckDB + local Parquet).
 --env prod    : (Future) Routes to AWS Athena + S3.
 """
@@ -24,7 +26,7 @@ def main() -> None:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    run_cmd = sub.add_parser("run", help="Run the publisher pipeline")
+    run_cmd = sub.add_parser("run", help="Run the publisher pipeline for one dashboard")
     run_cmd.add_argument(
         "--env",
         required=True,
@@ -39,6 +41,21 @@ def main() -> None:
         "--client",
         default=None,
         help="Client identifier for multi-client deployments (optional)",
+    )
+
+    bootstrap_cmd = sub.add_parser(
+        "bootstrap",
+        help="Initialize a full client/env scope by running all supported dashboards",
+    )
+    bootstrap_cmd.add_argument(
+        "--env",
+        default="local",
+        help="Deployment environment (default: local)",
+    )
+    bootstrap_cmd.add_argument(
+        "--client",
+        default=None,
+        help="Client identifier (default: default)",
     )
 
     args = parser.parse_args()
@@ -56,6 +73,9 @@ def main() -> None:
             dashboard=args.dashboard,
             client=args.client,
         )
+
+    elif args.command == "bootstrap":
+        publisher_main.bootstrap(env=args.env, client=args.client)
 
 
 if __name__ == "__main__":

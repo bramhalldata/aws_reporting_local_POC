@@ -1,0 +1,108 @@
+{
+  "client_id": "contexture",
+  "env_id": "local",
+  "generated_at": "2026-03-10T16:47:47+00:00",
+  "runs": [
+    {
+      "artifacts": [
+        {
+          "name": "summary.json",
+          "path": "contexture/local/runs/20260310T164747Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "contexture/local/runs/20260310T164747Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "contexture/local/runs/20260310T164747Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "contexture/local/runs/20260310T164747Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
+      ],
+      "dashboard_id": "dlq_operations",
+      "generated_at": "2026-03-10T16:47:47+00:00",
+      "report_ts": "2026-03-10T16:47:47Z",
+      "run_id": "20260310T164747Z",
+      "schema_version": "1.2.0",
+      "status": "SUCCESS"
+    },
+    {
+      "artifacts": [
+        {
+          "name": "summary.json",
+          "path": "contexture/local/runs/20260310T164747Z/pipeline_health/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "failure_types.json",
+          "path": "contexture/local/runs/20260310T164747Z/pipeline_health/failure_types.json",
+          "type": "failure_types"
+        }
+      ],
+      "dashboard_id": "pipeline_health",
+      "generated_at": "2026-03-10T16:47:47+00:00",
+      "report_ts": "2026-03-10T16:47:47Z",
+      "run_id": "20260310T164747Z",
+      "schema_version": "1.2.0",
+      "status": "SUCCESS"
+    },
+    {
+      "artifacts": [
+        {
+          "name": "summary.json",
+          "path": "contexture/local/runs/20260310T164554Z/dlq_operations/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "contexture/local/runs/20260310T164554Z/dlq_operations/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "top_sites.json",
+          "path": "contexture/local/runs/20260310T164554Z/dlq_operations/top_sites.json",
+          "type": "top_sites"
+        },
+        {
+          "name": "exceptions.json",
+          "path": "contexture/local/runs/20260310T164554Z/dlq_operations/exceptions.json",
+          "type": "exceptions"
+        }
+      ],
+      "dashboard_id": "dlq_operations",
+      "generated_at": "2026-03-10T16:45:54+00:00",
+      "report_ts": "2026-03-10T16:45:54Z",
+      "run_id": "20260310T164554Z",
+      "schema_version": "1.2.0",
+      "status": "SUCCESS"
+    },
+    {
+      "artifacts": [
+        {
+          "name": "summary.json",
+          "path": "contexture/local/runs/20260310T164554Z/pipeline_health/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "failure_types.json",
+          "path": "contexture/local/runs/20260310T164554Z/pipeline_health/failure_types.json",
+          "type": "failure_types"
+        }
+      ],
+      "dashboard_id": "pipeline_health",
+      "generated_at": "2026-03-10T16:45:54+00:00",
+      "report_ts": "2026-03-10T16:45:54Z",
+      "run_id": "20260310T164554Z",
+      "schema_version": "1.2.0",
+      "status": "SUCCESS"
+    }
+  ],
+  "schema_version": "1.2.0"
+}
