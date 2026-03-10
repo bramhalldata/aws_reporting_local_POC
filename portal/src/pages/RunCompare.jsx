@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { COMPARE_WHITELIST } from "../utils/runDiff.js";
+import ScopeEmptyState from "../components/ScopeEmptyState.jsx";
 
 // Route: /:client/:env/history/compare?dashboard=<id>&base=<runId>&target=<runId>
 //
@@ -196,7 +197,9 @@ async function loadCompare(client, env, dashboard, baseId, targetId) {
   // Phase 1: resolve run metadata from the index
   const histRes = await fetch(`/${client}/${env}/current/run_history.json`);
   const hist = await parseJsonResponse(histRes).catch(() => {
-    throw new Error("run_history.json not found. Run the publisher first.");
+    const err = new Error("Scope not bootstrapped.");
+    err.isScopeEmpty = true;
+    throw err;
   });
   if (!Array.isArray(hist.runs)) {
     throw new Error("run_history.json is malformed: 'runs' is not an array.");
@@ -539,8 +542,9 @@ export default function RunCompare() {
   const baseId    = searchParams.get("base");
   const targetId  = searchParams.get("target");
 
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(null);
+  const [isEmptyScope, setIsEmptyScope] = useState(false);
   const [baseRun,     setBaseRun]     = useState(null);
   const [targetRun,   setTargetRun]   = useState(null);
   const [comparisons, setComparisons] = useState([]);
@@ -565,7 +569,10 @@ export default function RunCompare() {
         setComparisons(comparisons);
         setNotCompared(notCompared);
       })
-      .catch(err => setError(err.message))
+      .catch(err => {
+        if (err.isScopeEmpty) setIsEmptyScope(true);
+        else setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, [client, env, dashboard, baseId, targetId]);
 
@@ -575,6 +582,14 @@ export default function RunCompare() {
     </Link>
   );
 
+  if (isEmptyScope) {
+    return (
+      <div style={styles.page}>
+        {backLink}
+        <ScopeEmptyState client={client} env={env} />
+      </div>
+    );
+  }
   if (error) {
     return (
       <div style={styles.page}>

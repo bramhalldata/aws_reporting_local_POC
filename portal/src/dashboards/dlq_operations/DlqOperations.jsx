@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { theme } from "../../theme/cashmereTheme";
+import ScopeEmptyState from "../../components/ScopeEmptyState.jsx";
 import { useArtifactPath } from "../../hooks/useArtifactPath.js";
 import HealthBanner from "../../components/HealthBanner.jsx";
 import KpiCard from "../../components/KpiCard.jsx";
@@ -61,10 +63,11 @@ const DASHBOARD = "dlq_operations";
 async function loadArtifacts(artifactPath) {
   // Step 1: load manifest to confirm pipeline status and discover artifacts
   const manifestRes = await fetch(artifactPath("manifest.json"));
-  if (!manifestRes.ok) {
-    throw new Error(
-      `manifest.json not found (HTTP ${manifestRes.status}). Run the publisher first: publisher run --env local --dashboard ${DASHBOARD}`
-    );
+  const manifestCt  = manifestRes.headers.get("content-type") || "";
+  if (!manifestRes.ok || !manifestCt.includes("application/json")) {
+    const err = new Error("Scope not bootstrapped.");
+    err.isScopeEmpty = true;
+    throw err;
   }
   const manifest = await manifestRes.json();
 
@@ -105,16 +108,28 @@ async function loadArtifacts(artifactPath) {
 // ---------------------------------------------------------------------------
 
 export default function DlqOperations() {
-  const artifactPath = useArtifactPath(DASHBOARD);
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
+  const { client, env } = useParams();
+  const artifactPath    = useArtifactPath(DASHBOARD);
+  const [data,         setData]         = useState(null);
+  const [error,        setError]        = useState(null);
+  const [isEmptyScope, setIsEmptyScope] = useState(false);
 
   useEffect(() => {
     loadArtifacts(artifactPath)
       .then(setData)
-      .catch((err) => setError(err.message));
+      .catch((err) => {
+        if (err.isScopeEmpty) setIsEmptyScope(true);
+        else setError(err.message);
+      });
   }, []);
 
+  if (isEmptyScope) {
+    return (
+      <div style={styles.page}>
+        <ScopeEmptyState client={client} env={env} />
+      </div>
+    );
+  }
   if (error) {
     return (
       <div style={styles.page}>

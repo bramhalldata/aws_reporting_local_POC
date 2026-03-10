@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
+import ScopeEmptyState from "../components/ScopeEmptyState.jsx";
 
 const styles = {
   page: {
@@ -154,9 +155,9 @@ async function loadHistory(client, env) {
   // Vite dev server returns index.html (text/html, status 200) for missing static
   // files as an SPA fallback, so checking res.ok alone is not sufficient.
   if (!res.ok || !contentType.includes("application/json")) {
-    throw new Error(
-      "run_history.json not found. Run the publisher first: python src/publisher/main.py"
-    );
+    const err = new Error("Scope not bootstrapped.");
+    err.isScopeEmpty = true;
+    throw err;
   }
   return res.json();
 }
@@ -170,8 +171,9 @@ export default function RunHistory() {
   const [searchParams]  = useSearchParams();
   const navigate        = useNavigate();
 
-  const [history, setHistory] = useState(null);
-  const [error, setError]     = useState(null);
+  const [history,      setHistory]      = useState(null);
+  const [error,        setError]        = useState(null);
+  const [isEmptyScope, setIsEmptyScope] = useState(false);
 
   // Compare entry point: RunDetail links to history with ?compareBase=<runId>&compareDashboard=<id>
   // so the user can pick a second run from the list. We read these once on mount.
@@ -184,7 +186,10 @@ export default function RunHistory() {
   );
 
   useEffect(() => {
-    loadHistory(client, env).then(setHistory).catch((err) => setError(err.message));
+    loadHistory(client, env).then(setHistory).catch((err) => {
+      if (err.isScopeEmpty) setIsEmptyScope(true);
+      else setError(err.message);
+    });
   }, [client, env]);
 
   // Clean compareBase query params from the URL once history has loaded,
@@ -195,6 +200,8 @@ export default function RunHistory() {
     }
   }, [history]);
 
+  if (isEmptyScope)
+    return <div style={styles.page}><ScopeEmptyState client={client} env={env} /></div>;
   if (error)
     return <div style={styles.page}><div style={styles.errorBox}>Error: {error}</div></div>;
   if (!history)

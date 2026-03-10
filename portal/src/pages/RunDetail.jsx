@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
+import ScopeEmptyState from "../components/ScopeEmptyState.jsx";
 
 // Route: /:client/:env/history/:runId/:dashboardId  (stable contract — do not change)
 //
@@ -133,9 +134,9 @@ async function loadRun(client, env, runId, dashboardId) {
   const contentType = res.headers.get("content-type") || "";
   // Vite SPA fallback returns index.html with status 200 for missing static files.
   if (!res.ok || !contentType.includes("application/json")) {
-    throw new Error(
-      "run_history.json not found. Run the publisher first: python src/publisher/main.py"
-    );
+    const err = new Error("Scope not bootstrapped.");
+    err.isScopeEmpty = true;
+    throw err;
   }
   const data = await res.json();
   // Guard against malformed structure before calling .find()
@@ -157,11 +158,15 @@ function formatTs(isoString) {
 
 export default function RunDetail() {
   const { client, env, runId, dashboardId } = useParams();
-  const [run, setRun]     = useState(null);
-  const [error, setError] = useState(null);
+  const [run,          setRun]          = useState(null);
+  const [error,        setError]        = useState(null);
+  const [isEmptyScope, setIsEmptyScope] = useState(false);
 
   useEffect(() => {
-    loadRun(client, env, runId, dashboardId).then(setRun).catch((err) => setError(err.message));
+    loadRun(client, env, runId, dashboardId).then(setRun).catch((err) => {
+      if (err.isScopeEmpty) setIsEmptyScope(true);
+      else setError(err.message);
+    });
   }, [client, env, runId, dashboardId]);
 
   const backLink = <Link to={`/${client}/${env}/history`} style={styles.backLink}>← Run History</Link>;
@@ -173,6 +178,13 @@ export default function RunDetail() {
     ? <Link to={`/${client}/${env}/history?${compareParams.toString()}`} style={{ ...styles.backLink, marginLeft: "1.5rem" }}>Compare with another run →</Link>
     : null;
 
+  if (isEmptyScope)
+    return (
+      <div style={styles.page}>
+        {backLink}
+        <ScopeEmptyState client={client} env={env} />
+      </div>
+    );
   if (error)
     return (
       <div style={styles.page}>
