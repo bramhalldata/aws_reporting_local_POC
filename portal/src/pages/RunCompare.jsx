@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { COMPARE_WHITELIST } from "../utils/runDiff.js";
 import ScopeEmptyState from "../components/ScopeEmptyState.jsx";
+import AnomalySummary from "../components/AnomalySummary.jsx";
 
 // Route: /:client/:env/history/compare?dashboard=<id>&base=<runId>&target=<runId>
 //
@@ -627,6 +628,22 @@ export default function RunCompare() {
       ))}
 
       <NotComparedSection items={notCompared} />
+
+      <AnomalySummary
+        client={client}
+        env={env}
+        dashboard={dashboard}
+        baseRunId={baseId}
+        targetRunId={targetId}
+        compareResults={Object.fromEntries(
+          comparisons
+            .filter(c => c.diffResult !== null)
+            .map(c => [c.type, c.diffResult])
+        )}
+        missingArtifacts={comparisons
+          .filter(c => c.diffResult === null)
+          .map(c => c.type)}
+      />
     </div>
   );
 }
