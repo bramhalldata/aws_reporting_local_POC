@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { useDashboardArtifacts } from "../hooks/useDashboardArtifacts.js";
-import { widgetRegistry } from "../widgetRegistry.js";
 import HealthBanner    from "./HealthBanner.jsx";
 import ScopeEmptyState from "./ScopeEmptyState.jsx";
+import WidgetRenderer  from "./WidgetRenderer.jsx";
 
 // ---------------------------------------------------------------------------
 // Styles — matches the page-level layout used by hand-composed dashboards
@@ -61,50 +61,6 @@ const styles = {
     fontFamily: "monospace",
   },
 };
-
-// ---------------------------------------------------------------------------
-// UnknownWidget — shown when a widget type has no registry entry.
-// Allows definitions to reference new types without crashing older renderer.
-// ---------------------------------------------------------------------------
-
-function UnknownWidget({ type, id }) {
-  return (
-    <div style={styles.unknownWidget}>
-      Unknown widget type: <strong>{type}</strong>
-      {id ? ` (id: ${id})` : ""}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// WidgetRenderer — resolves one widget definition to a component + props
-// ---------------------------------------------------------------------------
-
-function WidgetRenderer({ widget, artifacts }) {
-  const entry = widgetRegistry[widget.type];
-
-  if (!entry) {
-    return <UnknownWidget type={widget.type} id={widget.id} />;
-  }
-
-  const artifactData = artifacts[widget.data_source.artifact];
-
-  if (artifactData === undefined) {
-    return (
-      <UnknownWidget
-        type={`data_source_error: artifact "${widget.data_source.artifact}" not loaded`}
-        id={widget.id}
-      />
-    );
-  }
-
-  const { field } = widget.data_source;
-  const data = field ? artifactData[field] : artifactData;
-  const props = entry.propsAdapter(widget, data);
-
-  const Component = entry.component;
-  return <Component {...props} />;
-}
 
 // ---------------------------------------------------------------------------
 // DashboardRenderer — renders a dashboard from a DashboardDefinition config
@@ -179,7 +135,11 @@ export default function DashboardRenderer({ definition }) {
             {section.widget_ids.map((widgetId) => {
               const widget = definition.widgets.find((w) => w.id === widgetId);
               if (!widget) {
-                return <UnknownWidget key={widgetId} type="missing_widget_id" id={widgetId} />;
+                return (
+                  <div key={widgetId} style={styles.unknownWidget}>
+                    Missing widget definition for id: <strong>{widgetId}</strong>
+                  </div>
+                );
               }
               return (
                 <WidgetRenderer key={widgetId} widget={widget} artifacts={artifacts} />

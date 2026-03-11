@@ -36,13 +36,13 @@
     {
       "id": "failures_24h",
       "type": "kpi_card",
-      "title": "Failures — last 24 h",
+      "metric": "failures_last_24h",
       "data_source": { "artifact": "summary.json", "field": "failures_last_24h" }
     },
     {
       "id": "failures_7d",
       "type": "kpi_card",
-      "title": "Failures — last 7 days",
+      "metric": "failures_last_7d",
       "data_source": { "artifact": "summary.json", "field": "failures_last_7d" }
     },
     {

@@ -881,13 +881,13 @@ skills/workflow/plan-review-loop.md
 
 Stage: PLAN
 
-Feature:
+Feature:  
 Reusable KPI Card Contract
 
-Plan artifact:
+Plan artifact:  
 docs/plans/kpi_card_contract_plan.md
 
-Review artifact:
+Review artifact:  
 docs/reviews/kpi_card_contract_review.md
 
 Both artifacts must be written to disk before returning.
@@ -898,91 +898,142 @@ Do NOT implement code yet.
 
 # Context
 
-The platform currently uses KPI cards, but they feel tied to specific dashboards and specific metrics.
+The platform currently uses KPI cards, but they are tightly coupled to specific dashboards and metrics.
 
-We want KPI cards to become reusable dashboard primitives that can appear across multiple dashboards without custom per-page logic.
+We want KPI cards to become **reusable dashboard primitives** that can appear across multiple dashboards without custom page logic.
 
-This is both an architecture and UX consistency improvement.
+Commercial analytics platforms (Datadog, Stripe, Vercel) follow a consistent KPI card pattern:
 
----
+- small metric label  
+- dominant primary value  
+- contextual delta or comparison  
+- optional micro-trend
 
-# Goal
-
-Define a reusable KPI card contract that supports use across multiple dashboards and multiple metric types.
-
-The KPI card contract should support at minimum:
-
-• label  
-• value  
-• delta / change  
-• trend / sparkline support  
-• formatting  
-• semantic tone / status  
-• optional icon or footnote  
-• optional click behavior
+This feature establishes the **architecture and contract** for KPI cards. Visual polish will come later.
 
 ---
 
-# Requirements
+# KPI Card Design Pattern (Required)
+
+All KPI cards must follow this visual hierarchy:
+
+1. **Metric Label (Eyebrow)**  
+   Small, muted text identifying the metric.
+
+2. **Primary Value (Hero Number)**  
+   The dominant element of the card. This must visually outweigh all other text.
+
+3. **Delta / Comparison Context**  
+   A small line describing how the value compares to a prior period or baseline.
+
+4. **Optional Micro Trend**  
+   A sparkline or simple trend indicator when data is available.
+
+Example structure:
+UX Guardrails
+
+The plan must enforce the following design rules:
+
+the primary value must visually dominate the card
+
+the label must not compete with the value
+
+color should primarily appear in the delta or status indicator
+
+cards must remain readable at a glance
+
+Avoid:
+
+large labels
+
+overly colorful primary numbers
+
+multi-line explanations
+
+dense text blocks
+
+KPI cards must remain fast to scan.
+
+Requirements
 
 The plan should cover:
 
-• required vs optional KPI card props  
-• how dashboard-specific logic is removed  
-• how KPI cards receive data  
-• how formatting remains consistent  
-• how the design supports different KPI use cases across dashboards  
-• how the KPI card aligns with future metric catalog work
+required vs optional KPI card props
 
----
+how dashboard-specific logic is removed
 
-# Non-goals
+how KPI cards receive data
+
+how formatting rules remain consistent
+
+how delta comparisons are represented
+
+how the contract supports multiple metric types
+
+how the KPI card aligns with the future metric catalog
+
+Non-goals
 
 The following must NOT be included in this feature:
 
-• final visual polish pass  
-• full metric catalog implementation  
-• drag-and-drop layout changes  
-• advanced animation system
+final visual polish pass
 
-This feature is about the reusable KPI card contract and component boundaries.
+full metric catalog implementation
 
----
+drag-and-drop layout changes
 
-# Plan output sections
+advanced animation system
+
+This feature defines the component contract and architecture, not final styling.
+
+Plan output sections
 
 The plan should include:
 
-1. Feature Overview  
-2. Current KPI Card Limitations  
-3. Proposed KPI Contract  
-4. Required vs Optional Props  
-5. Example Usage Across Two Dashboards  
-6. Files to Create or Modify  
-7. Risks / Tradeoffs  
-8. Verification Checklist
+Feature Overview
 
----
+Current KPI Card Limitations
 
-# Verification checklist
+KPI Design Pattern Summary
+
+KPI Interaction Pattern
+
+Proposed KPI Contract
+
+Required vs Optional Props
+
+Data Flow and Integration with Widgets
+
+Example Usage Across Two Dashboards
+
+Files to Create or Modify
+
+Risks / Tradeoffs
+
+Verification Checklist
+
+Verification checklist
 
 Plan must include validation steps such as:
 
-• confirm one KPI card component can support multiple dashboards  
-• confirm required props are clearly defined  
-• confirm dashboard-specific logic is removed  
-• confirm the contract remains compatible with future metric catalog integration
+confirm one KPI card component supports multiple dashboards
 
----
+confirm required props are clearly defined
 
-# Deliverables
+confirm dashboard-specific logic is removed
+
+confirm delta comparison is supported
+
+confirm hover interaction does not require additional data fetching
+
+confirm the contract remains compatible with the future metric catalog
+
+Deliverables
 
 Write these artifacts to disk:
 
-docs/plans/kpi_card_contract_plan.md  
+docs/plans/kpi_card_contract_plan.md
 docs/reviews/kpi_card_contract_review.md
-
----
 
 ## 5. Metric Catalog
 

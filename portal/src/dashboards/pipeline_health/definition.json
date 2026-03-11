@@ -21,19 +21,19 @@
     {
       "id": "docs_processed_24h",
       "type": "kpi_card",
-      "title": "Documents — last 24 h",
+      "metric": "total_documents_last_24h",
       "data_source": { "artifact": "summary.json", "field": "total_documents_last_24h" }
     },
     {
       "id": "active_sites_24h",
       "type": "kpi_card",
-      "title": "Active Sites — last 24 h",
+      "metric": "active_sites_last_24h",
       "data_source": { "artifact": "summary.json", "field": "active_sites_last_24h" }
     },
     {
       "id": "latest_event",
       "type": "kpi_card",
-      "title": "Latest Event",
+      "metric": "latest_event_timestamp",
       "data_source": { "artifact": "summary.json", "field": "latest_event_timestamp" }
     },
     {
