@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { useDashboardArtifacts } from "../hooks/useDashboardArtifacts.js";
 import HealthBanner    from "./HealthBanner.jsx";
 import ScopeEmptyState from "./ScopeEmptyState.jsx";
 import WidgetRenderer  from "./WidgetRenderer.jsx";
+import DashboardGrid   from "./DashboardGrid.jsx";
 
 // ---------------------------------------------------------------------------
 // Styles — matches the page-level layout used by hand-composed dashboards
@@ -81,6 +82,27 @@ export default function DashboardRenderer({ definition }) {
     return [...new Set(definition.widgets.map((w) => w.data_source.artifact))];
   }, [definition]);
 
+  // Per-section layout state for "grid" sections.
+  // Initialised from widget.layout coordinates in the definition.
+  const [sectionLayouts, setSectionLayouts] = useState(() => {
+    const initial = {};
+    definition.layout.sections.forEach((section) => {
+      if (section.layout?.type === "grid") {
+        initial[section.id] = section.widget_ids
+          .map((id) => definition.widgets.find((w) => w.id === id))
+          .filter(Boolean)
+          .map((w) => ({
+            i: w.id,
+            x: w.layout?.col ?? 0,
+            y: w.layout?.row ?? 0,
+            w: w.layout?.w  ?? 6,
+            h: w.layout?.h  ?? 2,
+          }));
+      }
+    });
+    return initial;
+  });
+
   const { artifacts, loading, error, isScopeEmpty } =
     useDashboardArtifacts(definition.id, artifactNames);
 
@@ -122,6 +144,23 @@ export default function DashboardRenderer({ definition }) {
 
       {definition.layout.sections.map((section) => {
         const layoutType = section.layout?.type ?? "stack";
+
+        if (layoutType === "grid") {
+          const sectionWidgets = section.widget_ids
+            .map((id) => definition.widgets.find((w) => w.id === id))
+            .filter(Boolean);
+          return (
+            <DashboardGrid
+              key={section.id}
+              widgets={sectionWidgets}
+              artifacts={artifacts}
+              layout={sectionLayouts[section.id] ?? []}
+              onLayoutChange={(newLayout) =>
+                setSectionLayouts((prev) => ({ ...prev, [section.id]: newLayout }))
+              }
+            />
+          );
+        }
 
         return (
           <div key={section.id} style={layoutType === "flex_row" ? styles.kpiRow : styles.section}>

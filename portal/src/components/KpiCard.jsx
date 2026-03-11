@@ -46,6 +46,8 @@ export default function KpiCard({
 
   const cardStyle = {
     flex: "1 1 200px",
+    height: "100%",
+    boxSizing: "border-box",
     background: theme.surface,
     border: `1px solid ${theme.border}`,
     borderTop: `3px solid ${borderColor}`,

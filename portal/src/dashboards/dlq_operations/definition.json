@@ -9,7 +9,7 @@
         "id": "kpis",
         "label": "Overview",
         "widget_ids": ["failures_24h", "failures_7d"],
-        "layout": { "type": "flex_row" }
+        "layout": { "type": "grid" }
       },
       {
         "id": "top_sites_7d",

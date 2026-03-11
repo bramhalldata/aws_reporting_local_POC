@@ -9,7 +9,7 @@
         "id": "kpis",
         "label": "Overview",
         "widget_ids": ["docs_processed_24h", "active_sites_24h", "latest_event"],
-        "layout": { "type": "flex_row" }
+        "layout": { "type": "grid" }
       },
       {
         "id": "breakdowns",
