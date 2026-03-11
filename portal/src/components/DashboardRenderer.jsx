@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { useDashboardArtifacts } from "../hooks/useDashboardArtifacts.js";
+import { useDashboardLayout } from "../hooks/useDashboardLayout.js";
 import HealthBanner    from "./HealthBanner.jsx";
 import ScopeEmptyState from "./ScopeEmptyState.jsx";
 import WidgetRenderer  from "./WidgetRenderer.jsx";
@@ -20,6 +21,8 @@ const styles = {
     minHeight: "100vh",
   },
   header: {
+    display: "flex",
+    alignItems: "baseline",
     marginBottom: "2rem",
     borderBottom: `2px solid ${theme.border}`,
     paddingBottom: "1rem",
@@ -28,6 +31,15 @@ const styles = {
     fontSize: "1.75rem",
     fontWeight: 700,
     color: theme.textPrimary,
+  },
+  resetButton: {
+    marginLeft: "auto",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "0.8rem",
+    color: theme.textMuted,
+    padding: "0.25rem 0",
   },
   // Layout type "flex_row" — horizontal flex wrap for KPI card rows.
   kpiRow: {
@@ -82,26 +94,12 @@ export default function DashboardRenderer({ definition }) {
     return [...new Set(definition.widgets.map((w) => w.data_source.artifact))];
   }, [definition]);
 
-  // Per-section layout state for "grid" sections.
-  // Initialised from widget.layout coordinates in the definition.
-  const [sectionLayouts, setSectionLayouts] = useState(() => {
-    const initial = {};
-    definition.layout.sections.forEach((section) => {
-      if (section.layout?.type === "grid") {
-        initial[section.id] = section.widget_ids
-          .map((id) => definition.widgets.find((w) => w.id === id))
-          .filter(Boolean)
-          .map((w) => ({
-            i: w.id,
-            x: w.layout?.col ?? 0,
-            y: w.layout?.row ?? 0,
-            w: w.layout?.w  ?? 6,
-            h: w.layout?.h  ?? 2,
-          }));
-      }
-    });
-    return initial;
-  });
+  const { sectionLayouts, updateSectionLayout, resetLayouts } =
+    useDashboardLayout(definition);
+
+  const hasGridSections = definition.layout.sections.some(
+    (s) => s.layout?.type === "grid"
+  );
 
   const { artifacts, loading, error, isScopeEmpty } =
     useDashboardArtifacts(definition.id, artifactNames);
@@ -140,6 +138,9 @@ export default function DashboardRenderer({ definition }) {
       />
       <header style={styles.header}>
         <h1 style={styles.title}>{definition.title}</h1>
+        {hasGridSections && (
+          <button onClick={resetLayouts} style={styles.resetButton}>Reset layout</button>
+        )}
       </header>
 
       {definition.layout.sections.map((section) => {
@@ -155,9 +156,7 @@ export default function DashboardRenderer({ definition }) {
               widgets={sectionWidgets}
               artifacts={artifacts}
               layout={sectionLayouts[section.id] ?? []}
-              onLayoutChange={(newLayout) =>
-                setSectionLayouts((prev) => ({ ...prev, [section.id]: newLayout }))
-              }
+              onLayoutChange={(newLayout) => updateSectionLayout(section.id, newLayout)}
             />
           );
         }

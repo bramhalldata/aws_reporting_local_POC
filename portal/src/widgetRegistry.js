@@ -93,7 +93,19 @@ export const widgetRegistry = {
       // Footnote: catalog default → kpi_config.footnote override
       const resolvedFootnote = footnote ?? catalogEntry?.footnote;
 
-      return { label, value: data, tone, footnote: resolvedFootnote, delta, sparklineData };
+      // Datetime values: format to short locale string and use a smaller font size.
+      const formatter = catalogEntry?.formatter;
+      let value = data;
+      let valueFontSize;
+      if (formatter === "datetime" && value != null) {
+        value = new Date(value).toLocaleString(undefined, {
+          month: "short", day: "numeric", year: "numeric",
+          hour: "2-digit", minute: "2-digit",
+        });
+        valueFontSize = "1.4rem";
+      }
+
+      return { label, value, tone, footnote: resolvedFootnote, delta, sparklineData, valueFontSize };
     },
   },
 

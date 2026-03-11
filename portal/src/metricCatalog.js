@@ -85,7 +85,7 @@ export const metricCatalog = {
 
   latest_event_timestamp: {
     label:             "Latest Event",
-    formatter:         "string",
+    formatter:         "datetime",
     tone:              "neutral",
     footnote:          "Most recent pipeline event",
     data_source_field: "latest_event_timestamp",

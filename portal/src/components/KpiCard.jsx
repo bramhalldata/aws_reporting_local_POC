@@ -38,6 +38,7 @@ export default function KpiCard({
   delta,
   tone = "neutral",
   footnote,
+  valueFontSize,
   sparklineData, // eslint-disable-line no-unused-vars — reserved for Phase 5/6
 }) {
   const [hovered, setHovered] = useState(false);
@@ -69,7 +70,7 @@ export default function KpiCard({
   };
 
   const valueStyle = {
-    fontSize: "2.75rem",
+    fontSize: valueFontSize ?? "2.75rem",
     fontWeight: 700,
     color: theme.textPrimary,
     lineHeight: 1,
