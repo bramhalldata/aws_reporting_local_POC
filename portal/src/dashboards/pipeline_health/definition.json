@@ -8,12 +8,14 @@
       {
         "id": "kpis",
         "label": "Overview",
-        "widget_ids": ["docs_processed_24h", "active_sites_24h", "latest_event"]
+        "widget_ids": ["docs_processed_24h", "active_sites_24h", "latest_event"],
+        "layout": { "type": "flex_row" }
       },
       {
         "id": "breakdowns",
         "label": "Failure Breakdown",
-        "widget_ids": ["failure_types_table"]
+        "widget_ids": ["failure_types_table"],
+        "layout": { "type": "stack" }
       }
     ]
   },
@@ -22,25 +24,29 @@
       "id": "docs_processed_24h",
       "type": "kpi_card",
       "metric": "total_documents_last_24h",
-      "data_source": { "artifact": "summary.json", "field": "total_documents_last_24h" }
+      "data_source": { "artifact": "summary.json", "field": "total_documents_last_24h" },
+      "layout": { "col": 0, "row": 0, "w": 4, "h": 2 }
     },
     {
       "id": "active_sites_24h",
       "type": "kpi_card",
       "metric": "active_sites_last_24h",
-      "data_source": { "artifact": "summary.json", "field": "active_sites_last_24h" }
+      "data_source": { "artifact": "summary.json", "field": "active_sites_last_24h" },
+      "layout": { "col": 4, "row": 0, "w": 4, "h": 2 }
     },
     {
       "id": "latest_event",
       "type": "kpi_card",
       "metric": "latest_event_timestamp",
-      "data_source": { "artifact": "summary.json", "field": "latest_event_timestamp" }
+      "data_source": { "artifact": "summary.json", "field": "latest_event_timestamp" },
+      "layout": { "col": 8, "row": 0, "w": 4, "h": 2 }
     },
     {
       "id": "failure_types_table",
       "type": "exceptions_table",
       "title": "Failure Types — last 24 h",
-      "data_source": { "artifact": "failure_types.json", "field": "failure_types" }
+      "data_source": { "artifact": "failure_types.json", "field": "failure_types" },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
     }
   ],
   "filters": [

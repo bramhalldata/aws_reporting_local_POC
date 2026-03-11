@@ -28,8 +28,7 @@ const styles = {
     fontWeight: 700,
     color: theme.textPrimary,
   },
-  // Phase 2 heuristic: all-kpi_card sections render as a flex row.
-  // Replace with explicit layout hints in Phase 6 (Layout Abstraction).
+  // Layout type "flex_row" — horizontal flex wrap for KPI card rows.
   kpiRow: {
     display: "flex",
     gap: "1.25rem",
@@ -122,16 +121,10 @@ export default function DashboardRenderer({ definition }) {
       </header>
 
       {definition.layout.sections.map((section) => {
-        // Phase 2 heuristic: sections composed entirely of kpi_card widgets
-        // render as a flex row to match the existing dashboard visual layout.
-        // Replace with explicit layout hints in Phase 6 (Layout Abstraction).
-        const isKpiRow = section.widget_ids.every((id) => {
-          const w = definition.widgets.find((x) => x.id === id);
-          return w?.type === "kpi_card";
-        });
+        const layoutType = section.layout?.type ?? "stack";
 
         return (
-          <div key={section.id} style={isKpiRow ? styles.kpiRow : styles.section}>
+          <div key={section.id} style={layoutType === "flex_row" ? styles.kpiRow : styles.section}>
             {section.widget_ids.map((widgetId) => {
               const widget = definition.widgets.find((w) => w.id === widgetId);
               if (!widget) {

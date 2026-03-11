@@ -8,27 +8,32 @@
       {
         "id": "kpis",
         "label": "Overview",
-        "widget_ids": ["failures_24h", "failures_7d"]
+        "widget_ids": ["failures_24h", "failures_7d"],
+        "layout": { "type": "flex_row" }
       },
       {
         "id": "top_sites_7d",
         "label": "Top Sites — 7 days",
-        "widget_ids": ["top_sites_7d_table"]
+        "widget_ids": ["top_sites_7d_table"],
+        "layout": { "type": "stack" }
       },
       {
         "id": "trends",
         "label": "Trends",
-        "widget_ids": ["failure_trend_chart"]
+        "widget_ids": ["failure_trend_chart"],
+        "layout": { "type": "stack" }
       },
       {
         "id": "top_sites_30d",
         "label": "Top Sites — 30 days",
-        "widget_ids": ["top_sites_30d_table"]
+        "widget_ids": ["top_sites_30d_table"],
+        "layout": { "type": "stack" }
       },
       {
         "id": "exceptions",
         "label": "Exceptions",
-        "widget_ids": ["exception_types_table"]
+        "widget_ids": ["exception_types_table"],
+        "layout": { "type": "stack" }
       }
     ]
   },
@@ -37,37 +42,43 @@
       "id": "failures_24h",
       "type": "kpi_card",
       "metric": "failures_last_24h",
-      "data_source": { "artifact": "summary.json", "field": "failures_last_24h" }
+      "data_source": { "artifact": "summary.json", "field": "failures_last_24h" },
+      "layout": { "col": 0, "row": 0, "w": 6, "h": 2 }
     },
     {
       "id": "failures_7d",
       "type": "kpi_card",
       "metric": "failures_last_7d",
-      "data_source": { "artifact": "summary.json", "field": "failures_last_7d" }
+      "data_source": { "artifact": "summary.json", "field": "failures_last_7d" },
+      "layout": { "col": 6, "row": 0, "w": 6, "h": 2 }
     },
     {
       "id": "top_sites_7d_table",
       "type": "data_table",
       "title": "Top Sites by Failures — last 7 days",
-      "data_source": { "artifact": "summary.json", "field": "top_sites" }
+      "data_source": { "artifact": "summary.json", "field": "top_sites" },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
     },
     {
       "id": "failure_trend_chart",
       "type": "line_chart",
       "title": "30-Day Failure Trend",
-      "data_source": { "artifact": "trend_30d.json", "field": "days" }
+      "data_source": { "artifact": "trend_30d.json", "field": "days" },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
     },
     {
       "id": "top_sites_30d_table",
       "type": "data_table",
       "title": "Top Sites by Failures — last 30 days",
-      "data_source": { "artifact": "top_sites.json", "field": "sites" }
+      "data_source": { "artifact": "top_sites.json", "field": "sites" },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
     },
     {
       "id": "exception_types_table",
       "type": "exceptions_table",
       "title": "Exceptions by Type — last 7 days",
-      "data_source": { "artifact": "exceptions.json", "field": "exceptions" }
+      "data_source": { "artifact": "exceptions.json", "field": "exceptions" },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
     }
   ],
   "filters": [
