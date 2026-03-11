@@ -6,10 +6,10 @@ const styles = {
     flexWrap: "wrap",
     gap: "0",
     borderRadius: 8,
-    padding: "0.75rem 1.25rem",
-    marginBottom: "1.5rem",
+    padding: "0.5rem 1.25rem",
+    marginBottom: "1rem",
     alignItems: "center",
-    rowGap: "0.5rem",
+    rowGap: "0.25rem",
   },
   bannerField: {
     display: "flex",
@@ -17,7 +17,7 @@ const styles = {
     paddingRight: "2rem",
   },
   bannerLabel: {
-    fontSize: "0.65rem",
+    fontSize: "0.6rem",
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: "0.07em",
@@ -25,7 +25,7 @@ const styles = {
     marginBottom: "0.2rem",
   },
   bannerValue: {
-    fontSize: "0.8rem",
+    fontSize: "0.75rem",
     color: theme.textPrimary,
     fontFamily: "monospace",
   },
@@ -39,16 +39,6 @@ const styles = {
   },
 };
 
-function getBannerStyle(status) {
-  if (status === "SUCCESS") {
-    return { background: theme.successBg, border: `1px solid ${theme.successBorder}` };
-  }
-  if (status === "WARNING") {
-    return { background: theme.warningBg, border: `1px solid ${theme.warningBorder}` };
-  }
-  return { background: theme.errorBg, border: `1px solid ${theme.errorBorder}` };
-}
-
 function getStatusPillStyle(status) {
   if (status === "SUCCESS") {
     return { background: theme.successBg, color: theme.successText };
@@ -59,20 +49,30 @@ function getStatusPillStyle(status) {
   return { background: theme.errorBg, color: theme.errorText };
 }
 
+function fmtDate(isoStr) {
+  return isoStr ? isoStr.replace("T", " ").replace("Z", " UTC") : "—";
+}
+
 export default function HealthBanner({ status, generatedAt, reportTs, schemaVersion }) {
+  const bannerStyle = {
+    ...styles.bannerBase,
+    background: theme.surface,
+    border: `1px solid ${theme.border}`,
+  };
+
   return (
-    <div style={{ ...styles.bannerBase, ...getBannerStyle(status) }}>
+    <div style={bannerStyle}>
       <div style={styles.bannerField}>
         <span style={styles.bannerLabel}>Status</span>
         <span style={{ ...styles.pill, ...getStatusPillStyle(status) }}>{status}</span>
       </div>
       <div style={styles.bannerField}>
         <span style={styles.bannerLabel}>Data as of</span>
-        <span style={styles.bannerValue}>{reportTs}</span>
+        <span style={styles.bannerValue}>{fmtDate(reportTs)}</span>
       </div>
       <div style={styles.bannerField}>
         <span style={styles.bannerLabel}>Generated</span>
-        <span style={styles.bannerValue}>{generatedAt}</span>
+        <span style={styles.bannerValue}>{fmtDate(generatedAt)}</span>
       </div>
       <div style={styles.bannerField}>
         <span style={styles.bannerLabel}>Schema</span>

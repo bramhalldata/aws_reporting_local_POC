@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { theme } from "../theme/cashmereTheme";
 
 const styles = {
@@ -29,16 +30,39 @@ const styles = {
     letterSpacing: "0.07em",
     color: theme.textSecondary,
     background: theme.background,
-    borderBottom: `1px solid ${theme.border}`,
+    borderBottom: `2px solid ${theme.border}`,
+  },
+  thRight: {
+    textAlign: "right",
+    padding: "0.65rem 1.25rem",
+    fontSize: "0.75rem",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.07em",
+    color: theme.textSecondary,
+    background: theme.background,
+    borderBottom: `2px solid ${theme.border}`,
   },
   td: {
     padding: "0.65rem 1.25rem",
     fontSize: "0.9rem",
     borderBottom: `1px solid ${theme.divider}`,
   },
+  tdRight: {
+    padding: "0.65rem 1.25rem",
+    fontSize: "0.9rem",
+    borderBottom: `1px solid ${theme.divider}`,
+    textAlign: "right",
+    fontVariantNumeric: "tabular-nums",
+  },
+  trEven: { background: theme.background },
+  trHover: { background: "#EFF6FF" },
 };
 
 export default function TopSitesTable({ title, sites }) {
+  const [hoveredRow, setHoveredRow] = useState(null);
+  const last = sites.length - 1;
+
   return (
     <div style={styles.tableCard}>
       <div style={styles.tableTitle}>{title}</div>
@@ -46,16 +70,33 @@ export default function TopSitesTable({ title, sites }) {
         <thead>
           <tr>
             <th style={styles.th}>Site</th>
-            <th style={styles.th}>Failures</th>
+            <th style={styles.thRight}>Failures</th>
           </tr>
         </thead>
         <tbody>
-          {sites.map((row) => (
-            <tr key={row.site}>
-              <td style={styles.td}>{row.site}</td>
-              <td style={styles.td}>{row.failures.toLocaleString()}</td>
-            </tr>
-          ))}
+          {sites.map((row, i) => {
+            const isLast = i === last;
+            const tdBase = isLast ? { borderBottom: "none" } : {};
+            const trStyle =
+              hoveredRow === row.site
+                ? styles.trHover
+                : i % 2 === 1
+                ? styles.trEven
+                : {};
+            return (
+              <tr
+                key={row.site}
+                style={trStyle}
+                onMouseEnter={() => setHoveredRow(row.site)}
+                onMouseLeave={() => setHoveredRow(null)}
+              >
+                <td style={{ ...styles.td, ...tdBase }}>{row.site}</td>
+                <td style={{ ...styles.tdRight, ...tdBase }}>
+                  {row.failures.toLocaleString()}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
