@@ -1,0 +1,32 @@
+{
+  "exceptions": [
+    {
+      "count": 65,
+      "failure_type": "No match found for XPath 'CustodianName' with input 'Castle Valley Childrens Clinic'"
+    },
+    {
+      "count": 48,
+      "failure_type": "No match found for XPath 'AuthorName' with input 'Orthopedic Centers of Colorado, LLC'"
+    },
+    {
+      "count": 38,
+      "failure_type": "No match found for XPath 'CustodianName' with input 'UCHealth Poudre Valley Hospital'"
+    },
+    {
+      "count": 22,
+      "failure_type": "No match found for XPath 'ServicePerformerAddress2' with input '6801 S YOSEMITE STREET, CENTENNIAL, CO, 80112-1406, US'"
+    },
+    {
+      "count": 16,
+      "failure_type": "No match found for XPath 'ProviderOrganizationName' with input 'Miramont Family Medicine-Snow Mesa'"
+    },
+    {
+      "count": 12,
+      "failure_type": "No match found for XPath 'FacilityName' with input 'Banner Fort Collins Medical Center'"
+    }
+  ],
+  "generated_at": "2026-03-11T00:55:22Z",
+  "report_ts": "2026-03-08T09:00:00Z",
+  "schema_version": "1.2.0",
+  "window_days": 7
+}

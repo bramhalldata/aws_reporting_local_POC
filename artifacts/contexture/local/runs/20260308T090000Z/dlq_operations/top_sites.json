@@ -1,30 +1,34 @@
 {
   "generated_at": "2026-03-11T00:55:22Z",
-  "report_ts": "2026-03-10T09:00:00Z",
+  "report_ts": "2026-03-08T09:00:00Z",
   "schema_version": "1.2.0",
   "sites": [
+    {
+      "failures": 141,
+      "site": "Castle Valley Childrens Clinic"
+    },
     {
       "failures": 95,
       "site": "UCHealth Poudre Valley Hospital"
     },
     {
-      "failures": 85,
-      "site": "Castle Valley Childrens Clinic"
-    },
-    {
-      "failures": 58,
+      "failures": 61,
       "site": "Orthopedic Centers of Colorado, LLC"
     },
     {
-      "failures": 39,
+      "failures": 49,
       "site": "Miramont Family Medicine-Snow Mesa"
     },
     {
-      "failures": 27,
+      "failures": 29,
       "site": "HealthONE Sky Ridge Medical Center"
     },
     {
-      "failures": 22,
+      "failures": 18,
+      "site": "SCL Health St. Francis Medical Center"
+    },
+    {
+      "failures": 15,
       "site": "Banner Fort Collins Medical Center"
     }
   ],

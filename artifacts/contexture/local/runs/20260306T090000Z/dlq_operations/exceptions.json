@@ -1,0 +1,28 @@
+{
+  "exceptions": [
+    {
+      "count": 58,
+      "failure_type": "No match found for XPath 'CustodianName' with input 'Castle Valley Childrens Clinic'"
+    },
+    {
+      "count": 41,
+      "failure_type": "No match found for XPath 'AuthorName' with input 'Orthopedic Centers of Colorado, LLC'"
+    },
+    {
+      "count": 22,
+      "failure_type": "No match found for XPath 'PatientAddress' with input '2750 ARAPAHOE RD, LAFAYETTE, CO, 80026, US'"
+    },
+    {
+      "count": 18,
+      "failure_type": "No match found for XPath 'CustodianName' with input 'UCHealth Poudre Valley Hospital'"
+    },
+    {
+      "count": 9,
+      "failure_type": "No match found for XPath 'ServicePerformerAddress2' with input '6801 S YOSEMITE STREET, CENTENNIAL, CO, 80112-1406, US'"
+    }
+  ],
+  "generated_at": "2026-03-11T00:55:22Z",
+  "report_ts": "2026-03-06T09:00:00Z",
+  "schema_version": "1.2.0",
+  "window_days": 7
+}

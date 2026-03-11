@@ -1,12 +1,16 @@
 {
   "failure_types": [
     {
-      "count": 9,
+      "count": 14,
       "failure_type": "No valid MRN found with provided whitelisted. MRNs in document: [2.16.840.1.113883.3.9620.2]"
+    },
+    {
+      "count": 8,
+      "failure_type": "No valid MRN found with provided whitelisted. MRNs in document: [Mrn,Interface Mapping External ID,Id,2.16.840.1.113883.4.1]"
     }
   ],
   "generated_at": "2026-03-11T00:55:22Z",
-  "report_ts": "2026-03-10T09:00:00Z",
+  "report_ts": "2026-03-04T09:00:00Z",
   "schema_version": "1.2.0",
   "window_days": 1
 }

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { COMPARE_WHITELIST } from "../utils/runDiff.js";
+import { classifyRunHealth } from "../utils/runHealth.js";
 import ScopeEmptyState from "../components/ScopeEmptyState.jsx";
 import AnomalySummary from "../components/AnomalySummary.jsx";
+import HealthBadge from "../components/HealthBadge.jsx";
 
 // Route: /:client/:env/history/compare?dashboard=<id>&base=<runId>&target=<runId>
 //
@@ -614,7 +616,10 @@ export default function RunCompare() {
       {backLink}
 
       <header style={styles.header}>
-        <div style={styles.title}>Compare Runs — {dashboard}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+          <div style={styles.title}>Compare Runs — {dashboard}</div>
+          <HealthBadge classification={classifyRunHealth(comparisons).classification} />
+        </div>
         <div style={styles.subtitle}>{client} / {env}</div>
       </header>
 

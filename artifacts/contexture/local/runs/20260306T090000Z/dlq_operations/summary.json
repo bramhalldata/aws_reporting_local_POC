@@ -1,0 +1,29 @@
+{
+  "failures_last_24h": 67,
+  "failures_last_7d": 148,
+  "generated_at": "2026-03-11T00:55:22Z",
+  "report_ts": "2026-03-06T09:00:00Z",
+  "schema_version": "1.2.0",
+  "top_sites": [
+    {
+      "failures": 42,
+      "site": "Castle Valley Childrens Clinic"
+    },
+    {
+      "failures": 35,
+      "site": "UCHealth Poudre Valley Hospital"
+    },
+    {
+      "failures": 28,
+      "site": "Orthopedic Centers of Colorado, LLC"
+    },
+    {
+      "failures": 25,
+      "site": "Miramont Family Medicine-Snow Mesa"
+    },
+    {
+      "failures": 18,
+      "site": "HealthONE Sky Ridge Medical Center"
+    }
+  ]
+}

@@ -1,127 +1,127 @@
 {
   "days": [
     {
+      "date": "2026-02-05",
+      "failures": 10
+    },
+    {
+      "date": "2026-02-06",
+      "failures": 10
+    },
+    {
+      "date": "2026-02-07",
+      "failures": 10
+    },
+    {
+      "date": "2026-02-08",
+      "failures": 10
+    },
+    {
       "date": "2026-02-09",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-10",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-11",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-12",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-13",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-14",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-15",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-16",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-17",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-18",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-19",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-20",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-21",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-22",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-23",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-24",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-25",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-26",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-27",
-      "failures": 5
+      "failures": 10
     },
     {
       "date": "2026-02-28",
-      "failures": 5
+      "failures": 21
     },
     {
       "date": "2026-03-01",
-      "failures": 5
+      "failures": 21
     },
     {
       "date": "2026-03-02",
-      "failures": 5
+      "failures": 21
     },
     {
       "date": "2026-03-03",
-      "failures": 5
+      "failures": 21
     },
     {
       "date": "2026-03-04",
-      "failures": 10
+      "failures": 21
     },
     {
       "date": "2026-03-05",
-      "failures": 10
+      "failures": 21
     },
     {
       "date": "2026-03-06",
-      "failures": 10
-    },
-    {
-      "date": "2026-03-07",
-      "failures": 10
-    },
-    {
-      "date": "2026-03-08",
-      "failures": 10
-    },
-    {
-      "date": "2026-03-09",
-      "failures": 10
-    },
-    {
-      "date": "2026-03-10",
-      "failures": 16
+      "failures": 22
     }
   ],
   "generated_at": "2026-03-11T00:55:22Z",
-  "report_ts": "2026-03-10T09:00:00Z",
+  "report_ts": "2026-03-06T09:00:00Z",
   "schema_version": "1.2.0"
 }

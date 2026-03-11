@@ -1,16 +1,20 @@
 {
   "exceptions": [
     {
-      "count": 42,
+      "count": 28,
       "failure_type": "No match found for XPath 'CustodianName' with input 'Castle Valley Childrens Clinic'"
     },
     {
-      "count": 34,
+      "count": 15,
       "failure_type": "No match found for XPath 'AuthorName' with input 'Orthopedic Centers of Colorado, LLC'"
+    },
+    {
+      "count": 9,
+      "failure_type": "No match found for XPath 'PatientAddress' with input '2750 ARAPAHOE RD, LAFAYETTE, CO, 80026, US'"
     }
   ],
   "generated_at": "2026-03-11T00:55:22Z",
-  "report_ts": "2026-03-10T09:00:00Z",
+  "report_ts": "2026-03-04T09:00:00Z",
   "schema_version": "1.2.0",
   "window_days": 7
 }
