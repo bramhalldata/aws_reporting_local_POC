@@ -1,0 +1,80 @@
+{
+  "id": "dlq_operations",
+  "title": "DLQ Operations",
+  "description": "Monitors DLQ failure rates and site-level breakdowns.",
+  "schema_version": "1.0.0",
+  "layout": {
+    "sections": [
+      {
+        "id": "kpis",
+        "label": "Overview",
+        "widget_ids": ["failures_24h", "failures_7d"]
+      },
+      {
+        "id": "top_sites_7d",
+        "label": "Top Sites — 7 days",
+        "widget_ids": ["top_sites_7d_table"]
+      },
+      {
+        "id": "trends",
+        "label": "Trends",
+        "widget_ids": ["failure_trend_chart"]
+      },
+      {
+        "id": "top_sites_30d",
+        "label": "Top Sites — 30 days",
+        "widget_ids": ["top_sites_30d_table"]
+      },
+      {
+        "id": "exceptions",
+        "label": "Exceptions",
+        "widget_ids": ["exception_types_table"]
+      }
+    ]
+  },
+  "widgets": [
+    {
+      "id": "failures_24h",
+      "type": "kpi_card",
+      "title": "Failures — last 24 h",
+      "data_source": { "artifact": "summary.json", "field": "failures_last_24h" }
+    },
+    {
+      "id": "failures_7d",
+      "type": "kpi_card",
+      "title": "Failures — last 7 days",
+      "data_source": { "artifact": "summary.json", "field": "failures_last_7d" }
+    },
+    {
+      "id": "top_sites_7d_table",
+      "type": "data_table",
+      "title": "Top Sites by Failures — last 7 days",
+      "data_source": { "artifact": "summary.json", "field": "top_sites" }
+    },
+    {
+      "id": "failure_trend_chart",
+      "type": "line_chart",
+      "title": "30-Day Failure Trend",
+      "data_source": { "artifact": "trend_30d.json", "field": "days" }
+    },
+    {
+      "id": "top_sites_30d_table",
+      "type": "data_table",
+      "title": "Top Sites by Failures — last 30 days",
+      "data_source": { "artifact": "top_sites.json", "field": "sites" }
+    },
+    {
+      "id": "exception_types_table",
+      "type": "exceptions_table",
+      "title": "Exceptions by Type — last 7 days",
+      "data_source": { "artifact": "exceptions.json", "field": "exceptions" }
+    }
+  ],
+  "filters": [
+    { "id": "client", "type": "url_param", "param": "client" },
+    { "id": "env",    "type": "url_param", "param": "env" }
+  ],
+  "defaults": {
+    "section": "kpis"
+  }
+}

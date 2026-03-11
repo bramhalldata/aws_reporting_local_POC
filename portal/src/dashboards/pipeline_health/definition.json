@@ -1,0 +1,53 @@
+{
+  "id": "pipeline_health",
+  "title": "Pipeline Health",
+  "description": "Operational health indicators for the CCD failure pipeline.",
+  "schema_version": "1.0.0",
+  "layout": {
+    "sections": [
+      {
+        "id": "kpis",
+        "label": "Overview",
+        "widget_ids": ["docs_processed_24h", "active_sites_24h", "latest_event"]
+      },
+      {
+        "id": "breakdowns",
+        "label": "Failure Breakdown",
+        "widget_ids": ["failure_types_table"]
+      }
+    ]
+  },
+  "widgets": [
+    {
+      "id": "docs_processed_24h",
+      "type": "kpi_card",
+      "title": "Documents — last 24 h",
+      "data_source": { "artifact": "summary.json", "field": "total_documents_last_24h" }
+    },
+    {
+      "id": "active_sites_24h",
+      "type": "kpi_card",
+      "title": "Active Sites — last 24 h",
+      "data_source": { "artifact": "summary.json", "field": "active_sites_last_24h" }
+    },
+    {
+      "id": "latest_event",
+      "type": "kpi_card",
+      "title": "Latest Event",
+      "data_source": { "artifact": "summary.json", "field": "latest_event_timestamp" }
+    },
+    {
+      "id": "failure_types_table",
+      "type": "exceptions_table",
+      "title": "Failure Types — last 24 h",
+      "data_source": { "artifact": "failure_types.json", "field": "failure_types" }
+    }
+  ],
+  "filters": [
+    { "id": "client", "type": "url_param", "param": "client" },
+    { "id": "env",    "type": "url_param", "param": "env" }
+  ],
+  "defaults": {
+    "section": "kpis"
+  }
+}
