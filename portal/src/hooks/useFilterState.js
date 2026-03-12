@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
+const FILTER_TYPE_URL_PARAM = "url_param";
+
 /**
  * resolveFilterState — pure resolution logic for dashboard filter state.
  *
@@ -19,7 +21,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 export function resolveFilterState(filters, pathParams, searchParams) {
   const state = {};
   for (const filter of (filters ?? [])) {
-    if (filter.type === "url_param") {
+    if (filter.type === FILTER_TYPE_URL_PARAM) {
       const value =
         pathParams[filter.param] ??
         searchParams.get(filter.param) ??

@@ -25,8 +25,8 @@ export function resolveWidgets(widgets, presets) {
       console.warn(
         `[resolveWidgets] Unknown preset: "${widget.preset}". Widget "${widget.id}" not resolved.`
       );
-      const { preset: _, ...rest } = widget;
-      return rest;
+      const { preset: _, ...overrides } = widget;
+      return overrides;
     }
 
     const { preset: _, ...overrides } = widget;
