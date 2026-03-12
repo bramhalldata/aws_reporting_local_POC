@@ -1,10 +1,10 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { usePlatformManifest } from "../hooks/usePlatformManifest.js";
-import { dashboardMeta } from "../dashboards/index.js";
+import { dashboardRegistry } from "../dashboards/index.js";
 import { targetUrl, resolveEnv } from "../utils/selectorNav.js";
 import { theme } from "../theme/cashmereTheme.js";
 
-const dashboardIds = dashboardMeta.map(d => d.id);
+const dashboardIds = dashboardRegistry.map(d => d.id);
 
 const styles = {
   wrapper: {

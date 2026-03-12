@@ -1,17 +1,23 @@
-import DlqOperations from "./dlq_operations/DlqOperations.jsx";
+import DlqOperations  from "./dlq_operations/DlqOperations.jsx";
 import PipelineHealth from "./pipeline_health/PipelineHealth.jsx";
 
-// Component registry — drives routing. Maps dashboard_id → view component.
-// To add a new dashboard: import its view component and add one entry here AND to dashboardMeta below.
-export const dashboards = {
-  dlq_operations: DlqOperations,
-  pipeline_health: PipelineHealth,
-};
-
-// Navigation metadata — drives NavBar tab rendering.
-// Array form ensures explicit tab ordering (no implicit object key order dependency).
-// IMPORTANT: keep ids in sync with dashboards keys above. Both must be updated together.
-export const dashboardMeta = [
-  { id: "dlq_operations",  label: "DLQ Operations" },
-  { id: "pipeline_health", label: "Pipeline Health" },
+/**
+ * dashboardRegistry — single source of truth for all registered dashboards.
+ *
+ * @typedef {Object} DashboardRegistryEntry
+ * @property {string}              id         Route segment and unique key.
+ * @property {string}              label      NavBar tab label.
+ * @property {React.ComponentType} component  View component rendered at this route.
+ *
+ * Array order controls NavBar tab order.
+ *
+ * To add a dashboard:
+ *   1. Create the view component in a new dashboards/<id>/ folder.
+ *   2. Import it above.
+ *   3. Add one entry to dashboardRegistry below.
+ *   No other files need to change.
+ */
+export const dashboardRegistry = [
+  { id: "dlq_operations",  label: "DLQ Operations",  component: DlqOperations  },
+  { id: "pipeline_health", label: "Pipeline Health", component: PipelineHealth },
 ];

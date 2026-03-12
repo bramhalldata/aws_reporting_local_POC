@@ -1,19 +1,6 @@
 import { NavLink, useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
-import { dashboards, dashboardMeta } from "../dashboards/index.js";
-
-// Dev-only: warn if a dashboardMeta entry has no matching route in the dashboards registry.
-// Vite tree-shakes import.meta.env.DEV blocks in production builds — zero production cost.
-if (import.meta.env.DEV) {
-  const routeIds = new Set(Object.keys(dashboards));
-  dashboardMeta.forEach(({ id }) => {
-    if (!routeIds.has(id)) {
-      console.warn(
-        `NavBar: dashboardMeta entry "${id}" has no matching route in the dashboards registry.`
-      );
-    }
-  });
-}
+import { dashboardRegistry } from "../dashboards/index.js";
 
 const styles = {
   // NavBar is intentionally full-width; dashboard content centers at maxWidth 900 below.
@@ -69,7 +56,7 @@ export default function NavBar() {
     <nav style={styles.nav}>
       <span style={styles.brand}>Reporting Platform</span>
       <div style={styles.tabList}>
-        {dashboardMeta.map(({ id, label }) => (
+        {dashboardRegistry.map(({ id, label }) => (
           <NavLink
             key={id}
             to={`/${client}/${env}/${id}`}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
-import { dashboards, dashboardMeta } from "./dashboards/index.js";
+import { dashboardRegistry } from "./dashboards/index.js";
 import AppShell from "./AppShell.jsx";
 import RunHistory from "./pages/RunHistory.jsx";
 import RunDetail from "./pages/RunDetail.jsx";
@@ -11,7 +11,7 @@ const DEFAULT_ENV    = "local";
 
 // Registry-driven default: first entry in dashboardMeta.
 // Changing the first entry in dashboardMeta changes the default landing page.
-const defaultDashboard = dashboardMeta[0].id;
+const defaultDashboard = dashboardRegistry[0].id;
 
 // Legacy redirect components — Navigate cannot inject dynamic route params,
 // so wrapper components using useParams() + useNavigate() are required.
@@ -41,7 +41,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/:client/:env" element={<AppShell />}>
-        {Object.entries(dashboards).map(([id, Component]) => (
+        {dashboardRegistry.map(({ id, component: Component }) => (
           <Route key={id} path={id} element={<Component />} />
         ))}
         <Route path="history/compare" element={<RunCompare />} />
