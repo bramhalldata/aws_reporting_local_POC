@@ -1,0 +1,59 @@
+{
+  "id":          "<DASHBOARD_ID>",
+  "title":       "<Human Readable Title>",
+  "description": "<One-line description of the dashboard.>",
+  "schema_version": "1.0.0",
+
+  "layout": {
+    "sections": [
+      {
+        "id":          "kpis",
+        "label":       "Overview",
+        "description": "<High-level summary for this dashboard.>",
+        "widget_ids":  ["metric_a", "metric_b"],
+        "layout":      { "type": "grid" }
+      },
+      {
+        "id":          "details",
+        "label":       "Details",
+        "description": "<Ranked breakdown for this dashboard.>",
+        "widget_ids":  ["detail_table"],
+        "layout":      { "type": "stack" }
+      }
+    ]
+  },
+
+  "widgets": [
+    {
+      "_comment": "KPI card A — uses a named preset; replace preset ID if a different metric is needed.",
+      "id":     "metric_a",
+      "preset": "failures_24h_kpi"
+    },
+    {
+      "_comment": "KPI card B — uses a named preset; replace preset ID if a different metric is needed.",
+      "id":     "metric_b",
+      "preset": "failures_7d_kpi"
+    },
+    {
+      "_comment": "Details table — replace artifact and field with your ranked-list data source.",
+      "id":    "detail_table",
+      "type":  "data_table",
+      "title": "<Table Title — e.g. Top Sites by Failures>",
+      "data_source": {
+        "artifact": "<ARTIFACT_NAME>.json",
+        "field":    "<FIELD_NAME>"
+      },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
+    }
+  ],
+
+  "filters": [
+    { "id": "client",     "type": "url_param", "param": "client" },
+    { "id": "env",        "type": "url_param", "param": "env" },
+    { "id": "date_range", "type": "url_param", "param": "date_range", "default": "7d" }
+  ],
+
+  "defaults": {
+    "section": "kpis"
+  }
+}

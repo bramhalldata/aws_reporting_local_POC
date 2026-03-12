@@ -1,0 +1,41 @@
+{
+  "id":          "<DASHBOARD_ID>",
+  "title":       "<Human Readable Title>",
+  "description": "<One-line description of the dashboard.>",
+  "schema_version": "1.0.0",
+
+  "layout": {
+    "sections": [
+      {
+        "id":          "<SECTION_ID>",
+        "label":       "<Section Heading>",
+        "description": "<Optional one-sentence section subtitle.>",
+        "widget_ids":  ["<WIDGET_ID>"],
+        "layout":      { "type": "grid" }
+      }
+    ]
+  },
+
+  "widgets": [
+    {
+      "id":     "<WIDGET_ID>",
+      "type":   "kpi_card",
+      "metric": "<METRIC_ID>",
+      "data_source": {
+        "artifact": "<ARTIFACT_NAME>.json",
+        "field":    "<FIELD_NAME>"
+      },
+      "layout": { "col": 0, "row": 0, "w": 6, "h": 2 }
+    }
+  ],
+
+  "filters": [
+    { "id": "client",     "type": "url_param", "param": "client" },
+    { "id": "env",        "type": "url_param", "param": "env" },
+    { "id": "date_range", "type": "url_param", "param": "date_range", "default": "7d" }
+  ],
+
+  "defaults": {
+    "section": "<SECTION_ID>"
+  }
+}

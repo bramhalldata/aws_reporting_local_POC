@@ -36,6 +36,30 @@ no changes to `App.jsx`, `NavBar.jsx`, or any other platform file.
 
 ---
 
+## Starting from a Template
+
+The fastest way to start is to copy one of the templates in `docs/templates/`:
+
+| Template | Shape | Use for |
+|----------|-------|---------|
+| `minimal` | 1 KPI card | prototypes, lightweight dashboards |
+| `kpi_overview` | KPIs + ranked table | executive / client-facing summaries |
+| `full_operational` | KPIs + trend + sites + exceptions | production operations dashboards |
+
+```sh
+# Copy the template closest to your goal:
+cp docs/templates/kpi_overview.json portal/src/dashboards/<id>/definition.json
+
+# Confirm all placeholders are filled before registering:
+grep '<' portal/src/dashboards/<id>/definition.json
+# Should return no output.
+```
+
+See [docs/templates/README.md](../templates/README.md) for full template descriptions and the
+placeholder convention.
+
+---
+
 ## Step 1 — Create `definition.json`
 
 Create `portal/src/dashboards/<id>/definition.json` using the template below.
@@ -337,6 +361,7 @@ produce artifacts.
 
 Before opening a PR:
 
+- [ ] `grep '<' portal/src/dashboards/<id>/definition.json` returns no output — all placeholders replaced
 - [ ] `definition.json` — `id` matches the folder name and the registry entry
 - [ ] `definition.json` — `schema_version` is `"1.0.0"`
 - [ ] All `widget_ids` in `layout.sections` have a matching entry in `widgets`

@@ -1,0 +1,95 @@
+{
+  "id":          "<DASHBOARD_ID>",
+  "title":       "<Human Readable Title>",
+  "description": "<One-line description of the dashboard.>",
+  "schema_version": "1.0.0",
+
+  "layout": {
+    "sections": [
+      {
+        "id":          "kpis",
+        "label":       "Overview",
+        "description": "<High-level failure counts and activity indicators.>",
+        "widget_ids":  ["metric_a", "metric_b"],
+        "layout":      { "type": "grid" }
+      },
+      {
+        "id":          "trends",
+        "label":       "Trends",
+        "description": "<Daily trend over the last 30 days.>",
+        "widget_ids":  ["failure_trend"],
+        "layout":      { "type": "stack" }
+      },
+      {
+        "id":          "top_sites",
+        "label":       "Top Sites",
+        "description": "<Sites ranked by failure volume.>",
+        "widget_ids":  ["sites_table"],
+        "layout":      { "type": "stack" }
+      },
+      {
+        "id":          "exceptions",
+        "label":       "Exceptions",
+        "description": "<Failure types ranked by occurrence count.>",
+        "widget_ids":  ["exceptions_table"],
+        "layout":      { "type": "stack" }
+      }
+    ]
+  },
+
+  "widgets": [
+    {
+      "_comment": "KPI card A — uses a named preset; replace preset ID if a different metric is needed.",
+      "id":     "metric_a",
+      "preset": "failures_24h_kpi"
+    },
+    {
+      "_comment": "KPI card B — uses a named preset; replace preset ID if a different metric is needed.",
+      "id":     "metric_b",
+      "preset": "failures_7d_kpi"
+    },
+    {
+      "_comment": "Trend chart — replace artifact and field with your daily time-series data source.",
+      "id":    "failure_trend",
+      "type":  "line_chart",
+      "title": "<Chart Title — e.g. 30-Day Failure Trend>",
+      "data_source": {
+        "artifact": "<ARTIFACT_NAME>.json",
+        "field":    "<FIELD_NAME>"
+      },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
+    },
+    {
+      "_comment": "Sites table — replace artifact and field with your site-ranked data source.",
+      "id":    "sites_table",
+      "type":  "data_table",
+      "title": "<Table Title — e.g. Top Sites by Failures — last 7 days>",
+      "data_source": {
+        "artifact": "<ARTIFACT_NAME>.json",
+        "field":    "<FIELD_NAME>"
+      },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
+    },
+    {
+      "_comment": "Exceptions table — replace artifact and field with your failure-type data source.",
+      "id":    "exceptions_table",
+      "type":  "exceptions_table",
+      "title": "<Table Title — e.g. Exceptions by Type — last 7 days>",
+      "data_source": {
+        "artifact": "<ARTIFACT_NAME>.json",
+        "field":    "<FIELD_NAME>"
+      },
+      "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
+    }
+  ],
+
+  "filters": [
+    { "id": "client",     "type": "url_param", "param": "client" },
+    { "id": "env",        "type": "url_param", "param": "env" },
+    { "id": "date_range", "type": "url_param", "param": "date_range", "default": "7d" }
+  ],
+
+  "defaults": {
+    "section": "kpis"
+  }
+}
