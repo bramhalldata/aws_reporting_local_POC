@@ -132,16 +132,11 @@ over query params of the same name.
 
 ### Available widget types
 
-| `type` | Component | Expected data shape |
-|--------|-----------|---------------------|
-| `kpi_card` | KpiCard | scalar number or string |
-| `line_chart` | TrendChart | `[{ date, failures }]` |
-| `data_table` | TopSitesTable | `[{ site, failures }]` |
-| `exceptions_table` | ExceptionsTable | `[{ failure_type, count }]` |
+For full widget type documentation — field tables, data shapes, examples, metric catalog, and
+presets — see **[docs/guides/widget-library.md](widget-library.md)**.
 
-For the current list, see `portal/src/widgetRegistry.js`. If a widget type is not
-registered, `WidgetRenderer` renders a visible warning block at runtime — the app will
-not crash.
+Current types: `kpi_card`, `line_chart`, `data_table`, `exceptions_table`.  If a widget type
+is not registered, `WidgetRenderer` renders a visible warning block at runtime — no crash.
 
 ### The `metric` field on `kpi_card` widgets
 
@@ -217,6 +212,115 @@ export const dashboardRegistry = [
 ```
 
 That's it. `App.jsx` and `NavBar.jsx` pick up the new entry automatically.
+
+---
+
+## Contributing via a Plugin
+
+The three-step workflow above (create definition + component + registry entry) is the standard
+path.  For **modular add-on capability** — when a dashboard, its widget types, and its metrics
+should be self-contained and not require edits to any core file — use the plugin contract instead.
+
+### Plugin contract overview
+
+A plugin is a plain JS object that contributes any combination of:
+
+| Field | Type | Registers into |
+|-------|------|----------------|
+| `dashboards` | `Array<{id, label, component}>` | `dashboardRegistry` — creates route + NavBar tab |
+| `widgets` | `Record<string, WidgetRegistryEntry>` | `widgetRegistry` — new widget types available to any definition.json |
+| `metrics` | `Record<string, MetricDefinition>` | `metricCatalog` — new metric IDs available to `kpi_card` widgets |
+| `presets` | `Record<string, WidgetPreset>` | `widgetPresets` — new preset IDs available to any definition.json |
+
+All fields are optional — a plugin need not contribute all four.
+
+### Minimal plugin example
+
+```js
+// portal/src/plugins/my_reports/index.js
+import { registerPlugin } from "../registerPlugin.js";
+import MyReports          from "./MyReports.jsx";
+
+registerPlugin({
+  dashboards: [
+    { id: "my_reports", label: "My Reports", component: MyReports },
+  ],
+});
+```
+
+### Full plugin example (all four contribution types)
+
+```js
+// portal/src/plugins/my_reports/index.js
+import { registerPlugin } from "../registerPlugin.js";
+import MyReports          from "./MyReports.jsx";
+import { MyKpiCard }      from "./MyKpiCard.jsx";
+
+registerPlugin({
+  dashboards: [
+    { id: "my_reports", label: "My Reports", component: MyReports },
+  ],
+  widgets: {
+    my_kpi_card: {
+      component:   MyKpiCard,
+      propsAdapter: (widget, data, filterState) => ({
+        title:  widget.label ?? "KPI",
+        value:  data,
+        filter: filterState?.date_range ?? "7d",
+      }),
+    },
+  },
+  metrics: {
+    my_custom_metric: {
+      label:             "Custom Metric",
+      formatter:         "number",
+      tone:              "neutral",
+      footnote:          null,
+      data_source_field: "custom_metric",
+      trend:             null,
+      thresholds:        [],
+    },
+  },
+  presets: {
+    my_kpi_preset: {
+      type:        "my_kpi_card",
+      metric:      "my_custom_metric",
+      data_source: { artifact: "summary.json", field: "custom_metric" },
+      layout:      { col: 0, row: 0, w: 6, h: 2 },
+    },
+  },
+});
+```
+
+### Activating a plugin
+
+1. Create your plugin module at `portal/src/plugins/<plugin_name>/index.js`.
+2. Import it in `portal/src/plugins/index.js`:
+
+```js
+// portal/src/plugins/index.js
+import { registerPlugin }  from "./registerPlugin.js";
+import { myReportsPlugin } from "./my_reports/index.js";
+
+registerPlugin(myReportsPlugin);
+```
+
+The bootstrap file runs before any component renders — all plugin entries are present by the
+time routing and NavBar are evaluated.
+
+### Collision behaviour
+
+| Conflict | Behaviour |
+|----------|-----------|
+| Duplicate dashboard `id` | `console.warn` + skip — existing entry is preserved |
+| Duplicate widget type key | `console.warn` + overwrite — allows intentional upgrades |
+| Duplicate metric or preset key | `console.warn` + overwrite |
+
+> **Important:** Use `registerPlugin()` exclusively. Direct mutation of registry objects
+> (`Object.assign(widgetRegistry, ...)`, `dashboardRegistry.push(...)`) bypasses collision
+> guards and is unsupported.
+
+See `portal/src/plugins/registerPlugin.js` for the full `DashboardPlugin` typedef and JSDoc.
 
 ---
 

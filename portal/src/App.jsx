@@ -1,3 +1,4 @@
+import "./plugins/index.js"; // side-effect: registers all plugins before routes render
 import { useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import { dashboardRegistry } from "./dashboards/index.js";
