@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { useDashboardArtifacts } from "../hooks/useDashboardArtifacts.js";
 import { useDashboardLayout } from "../hooks/useDashboardLayout.js";
+import { useFilterState } from "../hooks/useFilterState.js";
+import { widgetPresets } from "../dashboards/widgetPresets.js";
+import { resolveWidgets } from "../dashboards/resolveWidgets.js";
 import HealthBanner    from "./HealthBanner.jsx";
 import ScopeEmptyState from "./ScopeEmptyState.jsx";
 import WidgetRenderer  from "./WidgetRenderer.jsx";
@@ -51,6 +54,22 @@ const styles = {
   section: {
     marginBottom: "2rem",
   },
+  sectionHeader: {
+    marginTop: "1.5rem",
+    marginBottom: "1rem",
+  },
+  sectionTitle: {
+    fontSize: "1.1rem",
+    fontWeight: 600,
+    color: theme.textSecondary,
+    margin: 0,
+  },
+  sectionDescription: {
+    fontSize: "0.875rem",
+    color: theme.textMuted,
+    marginTop: "0.25rem",
+    marginBottom: 0,
+  },
   errorBox: {
     background: theme.errorBg,
     border: `1px solid ${theme.errorBorder}`,
@@ -89,10 +108,18 @@ const styles = {
 export default function DashboardRenderer({ definition }) {
   const { client, env } = useParams();
 
+  const filterState = useFilterState(definition);
+
+  // Resolve preset references in the widget list once per definition change.
+  const resolvedWidgets = useMemo(
+    () => resolveWidgets(definition.widgets, widgetPresets),
+    [definition.widgets]
+  );
+
   // Collect unique artifact filenames required by all widgets.
   const artifactNames = useMemo(() => {
-    return [...new Set(definition.widgets.map((w) => w.data_source.artifact))];
-  }, [definition]);
+    return [...new Set(resolvedWidgets.map((w) => w.data_source?.artifact).filter(Boolean))];
+  }, [resolvedWidgets]);
 
   const { sectionLayouts, updateSectionLayout, resetLayouts } =
     useDashboardLayout(definition);
@@ -146,25 +173,38 @@ export default function DashboardRenderer({ definition }) {
       {definition.layout.sections.map((section) => {
         const layoutType = section.layout?.type ?? "stack";
 
+        const sectionHeading = section.label && (
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>{section.label}</h2>
+            {section.description && (
+              <p style={styles.sectionDescription}>{section.description}</p>
+            )}
+          </div>
+        );
+
         if (layoutType === "grid") {
           const sectionWidgets = section.widget_ids
-            .map((id) => definition.widgets.find((w) => w.id === id))
+            .map((id) => resolvedWidgets.find((w) => w.id === id))
             .filter(Boolean);
           return (
-            <DashboardGrid
-              key={section.id}
-              widgets={sectionWidgets}
-              artifacts={artifacts}
-              layout={sectionLayouts[section.id] ?? []}
-              onLayoutChange={(newLayout) => updateSectionLayout(section.id, newLayout)}
-            />
+            <div key={section.id} style={styles.section}>
+              {sectionHeading}
+              <DashboardGrid
+                widgets={sectionWidgets}
+                artifacts={artifacts}
+                layout={sectionLayouts[section.id] ?? []}
+                onLayoutChange={(newLayout) => updateSectionLayout(section.id, newLayout)}
+                filterState={filterState}
+              />
+            </div>
           );
         }
 
         return (
           <div key={section.id} style={layoutType === "flex_row" ? styles.kpiRow : styles.section}>
+            {sectionHeading}
             {section.widget_ids.map((widgetId) => {
-              const widget = definition.widgets.find((w) => w.id === widgetId);
+              const widget = resolvedWidgets.find((w) => w.id === widgetId);
               if (!widget) {
                 return (
                   <div key={widgetId} style={styles.unknownWidget}>
@@ -173,7 +213,7 @@ export default function DashboardRenderer({ definition }) {
                 );
               }
               return (
-                <WidgetRenderer key={widgetId} widget={widget} artifacts={artifacts} />
+                <WidgetRenderer key={widgetId} widget={widget} artifacts={artifacts} filterState={filterState} />
               );
             })}
           </div>

@@ -17,7 +17,7 @@ const ResponsiveGridLayout = WidthProvider(GridLayout);
  *   layout         Layout[]             [{ i, x, y, w, h }] — managed by parent
  *   onLayoutChange (Layout[]) => void   called after each drag or resize
  */
-export default function DashboardGrid({ widgets, artifacts, layout, onLayoutChange }) {
+export default function DashboardGrid({ widgets, artifacts, layout, onLayoutChange, filterState }) {
   return (
     <ResponsiveGridLayout
       layout={layout}
@@ -30,7 +30,7 @@ export default function DashboardGrid({ widgets, artifacts, layout, onLayoutChan
     >
       {widgets.map((widget) => (
         <div key={widget.id} style={{ height: "100%" }}>
-          <WidgetRenderer widget={widget} artifacts={artifacts} />
+          <WidgetRenderer widget={widget} artifacts={artifacts} filterState={filterState} />
         </div>
       ))}
     </ResponsiveGridLayout>

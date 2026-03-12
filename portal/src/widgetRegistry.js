@@ -9,11 +9,13 @@
  * @typedef {Object} WidgetRegistryEntry
  * @property {React.ComponentType} component
  *   The React component to render.
- * @property {function(widget: Object, data: *): Object} propsAdapter
+ * @property {function(widget: Object, data: *, filterState: Object): Object} propsAdapter
  *   Maps the widget definition and extracted artifact data to component props.
- *   - widget: the full widget definition object from definition.json
- *   - data:   the artifact value after data_source.field extraction
- *             (scalar for kpi_card; array for tables/charts; object for full payload)
+ *   - widget:      the full widget definition object from definition.json
+ *   - data:        the artifact value after data_source.field extraction
+ *                  (scalar for kpi_card; array for tables/charts; object for full payload)
+ *   - filterState: { [filterId]: value } map from useFilterState; may be undefined.
+ *                  Existing adapters that ignore this argument are unaffected.
  *
  * Note: entry shape is not enforced at runtime. An incorrect entry
  * (e.g. misspelled key) will fail silently at render time — verify by

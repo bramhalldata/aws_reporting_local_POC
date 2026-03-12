@@ -8,6 +8,7 @@
       {
         "id": "kpis",
         "label": "Overview",
+        "description": "Pipeline throughput and recency indicators for the last 24 hours.",
         "widget_ids": ["docs_processed_24h", "active_sites_24h", "latest_event"],
         "layout": { "type": "grid" }
       },

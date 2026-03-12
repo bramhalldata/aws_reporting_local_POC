@@ -8,12 +8,14 @@
       {
         "id": "kpis",
         "label": "Overview",
+        "description": "Failure counts across the last 24 hours and 7 days.",
         "widget_ids": ["failures_24h", "failures_7d"],
         "layout": { "type": "grid" }
       },
       {
         "id": "top_sites_7d",
         "label": "Top Sites — 7 days",
+        "description": "Sites ranked by failure volume over the most recent 7-day window.",
         "widget_ids": ["top_sites_7d_table"],
         "layout": { "type": "stack" }
       },
@@ -40,17 +42,11 @@
   "widgets": [
     {
       "id": "failures_24h",
-      "type": "kpi_card",
-      "metric": "failures_last_24h",
-      "data_source": { "artifact": "summary.json", "field": "failures_last_24h" },
-      "layout": { "col": 0, "row": 0, "w": 6, "h": 2 }
+      "preset": "failures_24h_kpi"
     },
     {
       "id": "failures_7d",
-      "type": "kpi_card",
-      "metric": "failures_last_7d",
-      "data_source": { "artifact": "summary.json", "field": "failures_last_7d" },
-      "layout": { "col": 6, "row": 0, "w": 6, "h": 2 }
+      "preset": "failures_7d_kpi"
     },
     {
       "id": "top_sites_7d_table",

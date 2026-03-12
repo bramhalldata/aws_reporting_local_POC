@@ -34,14 +34,14 @@ function UnknownWidget({ type, id }) {
 //   artifacts — { [filename]: parsedJson } map from useDashboardArtifacts
 //
 // Resolution flow:
-//   widgetRegistry[widget.type]             → registry entry (or UnknownWidget)
-//   artifacts[widget.data_source.artifact]  → artifact payload
-//   artifactData[widget.data_source.field]  → extracted value (if field is set)
-//   entry.propsAdapter(widget, data)        → component props
-//   <entry.component {...props} />          → rendered output
+//   widgetRegistry[widget.type]                        → registry entry (or UnknownWidget)
+//   artifacts[widget.data_source.artifact]             → artifact payload
+//   artifactData[widget.data_source.field]             → extracted value (if field is set)
+//   entry.propsAdapter(widget, data, filterState)      → component props
+//   <entry.component {...props} />                     → rendered output
 // ---------------------------------------------------------------------------
 
-export default function WidgetRenderer({ widget, artifacts }) {
+export default function WidgetRenderer({ widget, artifacts, filterState }) {
   const entry = widgetRegistry[widget.type];
 
   if (!entry) {
@@ -61,7 +61,7 @@ export default function WidgetRenderer({ widget, artifacts }) {
 
   const { field } = widget.data_source;
   const data = field ? artifactData[field] : artifactData;
-  const props = entry.propsAdapter(widget, data);
+  const props = entry.propsAdapter(widget, data, filterState);
 
   const Component = entry.component;
   return <Component {...props} />;
