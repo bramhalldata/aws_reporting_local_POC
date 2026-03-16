@@ -46,4 +46,13 @@ export const theme = {
   navText:         "#475569",   // textSecondary — inactive tab label
   navActiveText:   "#1D4ED8",   // primaryBlue — active tab label
   navActiveBorder: "#1D4ED8",   // primaryBlue — active tab bottom indicator
+
+  // Elevation
+  shadowCard:      "0 2px 8px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04)",
+  shadowCardHover: "0 4px 16px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.08)",
+  shadowSubtle:    "0 1px 3px rgba(0,0,0,.06)",
+
+  // Motion
+  transitionFast: "0.1s ease",
+  transitionBase: "0.15s ease",
 };

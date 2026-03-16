@@ -63,6 +63,8 @@ const styles = {
     fontWeight: 600,
     color: theme.textSecondary,
     margin: 0,
+    borderLeft: `3px solid ${theme.primaryBlue}`,
+    paddingLeft: "0.75rem",
   },
   sectionDescription: {
     fontSize: "0.875rem",
@@ -78,9 +80,11 @@ const styles = {
     color: theme.errorText,
     fontWeight: 500,
   },
-  loading: {
-    color: theme.textSecondary,
-    fontSize: "0.95rem",
+  skeleton: {
+    background: theme.divider,
+    borderRadius: 8,
+    height: "8rem",
+    animation: "kpi-pulse 1.4s ease-in-out infinite",
   },
   unknownWidget: {
     background: theme.warningBg,
@@ -148,7 +152,8 @@ export default function DashboardRenderer({ definition }) {
   if (loading) {
     return (
       <div style={styles.page}>
-        <p style={styles.loading}>Loading artifacts...</p>
+        <style>{`@keyframes kpi-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }`}</style>
+        <div style={styles.skeleton} />
       </div>
     );
   }

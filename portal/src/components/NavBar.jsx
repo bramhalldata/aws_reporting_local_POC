@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useParams } from "react-router-dom";
 import { theme } from "../theme/cashmereTheme";
 import { dashboardRegistry } from "../dashboards/index.js";
@@ -35,7 +36,12 @@ const styles = {
     alignItems: "stretch",
     height: "100%",
   },
-  tab: (isActive) => ({
+  tabWrapper: {
+    display: "flex",
+    alignItems: "stretch",
+    height: "100%",
+  },
+  tab: (isActive, hovered) => ({
     display: "flex",
     alignItems: "center",
     padding: "0 1rem",
@@ -46,9 +52,31 @@ const styles = {
     borderBottom: isActive
       ? `2px solid ${theme.navActiveBorder}`
       : "2px solid transparent",
+    background: hovered && !isActive ? theme.background : "transparent",
+    transition: `background ${theme.transitionFast}, color ${theme.transitionFast}`,
+    cursor: "pointer",
     whiteSpace: "nowrap",
   }),
 };
+
+// Internal component — manages per-tab hover state without polluting the component index.
+function HoverableTab({ to, children }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <span
+      style={styles.tabWrapper}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <NavLink
+        to={to}
+        style={({ isActive }) => styles.tab(isActive, hovered)}
+      >
+        {children}
+      </NavLink>
+    </span>
+  );
+}
 
 export default function NavBar() {
   const { client, env } = useParams();
@@ -57,22 +85,15 @@ export default function NavBar() {
       <span style={styles.brand}>Reporting Platform</span>
       <div style={styles.tabList}>
         {dashboardRegistry.map(({ id, label }) => (
-          <NavLink
-            key={id}
-            to={`/${client}/${env}/${id}`}
-            style={({ isActive }) => styles.tab(isActive)}
-          >
+          <HoverableTab key={id} to={`/${client}/${env}/${id}`}>
             {label}
-          </NavLink>
+          </HoverableTab>
         ))}
       </div>
       <div style={styles.platformLinks}>
-        <NavLink
-          to={`/${client}/${env}/history`}
-          style={({ isActive }) => styles.tab(isActive)}
-        >
+        <HoverableTab to={`/${client}/${env}/history`}>
           History
-        </NavLink>
+        </HoverableTab>
       </div>
     </nav>
   );

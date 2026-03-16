@@ -4,17 +4,16 @@ const styles = {
   bannerBase: {
     display: "flex",
     flexWrap: "wrap",
-    gap: "0",
+    columnGap: "2rem",
+    rowGap: "0.25rem",
     borderRadius: 8,
     padding: "0.5rem 1.25rem",
     marginBottom: "1rem",
     alignItems: "center",
-    rowGap: "0.25rem",
   },
   bannerField: {
     display: "flex",
     flexDirection: "column",
-    paddingRight: "2rem",
   },
   bannerLabel: {
     fontSize: "0.6rem",

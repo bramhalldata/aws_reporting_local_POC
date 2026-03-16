@@ -1,4 +1,9 @@
 import { useState } from "react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
 import { theme } from "../theme/cashmereTheme";
 
 /**
@@ -9,6 +14,8 @@ import { theme } from "../theme/cashmereTheme";
  *   value         number|string    required  Primary hero value. Numbers are locale-formatted.
  *                                            Strings are rendered as-is. null/undefined → "—"
  *   delta         string           optional  Comparison line e.g. "↓ 8% vs last week"
+ *                                            Leading "↑" renders in accentTeal (positive).
+ *                                            Leading "↓" renders in error red (negative).
  *   tone          string           optional  Top-border color signal:
  *                                              "neutral"  → primaryBlue  (default)
  *                                              "positive" → accentTeal
@@ -16,7 +23,9 @@ import { theme } from "../theme/cashmereTheme";
  *                                              "critical" → error (red)
  *                                            Unknown values fall back to "neutral" silently.
  *   footnote      string           optional  Small explanatory text (single line, truncated)
- *   sparklineData array            optional  RESERVED — accepted but not rendered in Phase 4
+ *   sparklineData array            optional  Array of { value: number } objects rendered as a
+ *                                            small area chart at the bottom of the card.
+ *                                            Absent or empty → no sparkline rendered.
  */
 
 const TONE_COLORS = {
@@ -32,6 +41,13 @@ function formatValue(value) {
   return String(value);
 }
 
+function deltaColor(delta) {
+  if (!delta) return theme.textSecondary;
+  if (delta.startsWith("↑")) return theme.accentTeal;
+  if (delta.startsWith("↓")) return theme.error;
+  return theme.textSecondary;
+}
+
 export default function KpiCard({
   label,
   value,
@@ -39,7 +55,7 @@ export default function KpiCard({
   tone = "neutral",
   footnote,
   valueFontSize,
-  sparklineData, // eslint-disable-line no-unused-vars — reserved for Phase 5/6
+  sparklineData,
 }) {
   const [hovered, setHovered] = useState(false);
 
@@ -54,10 +70,9 @@ export default function KpiCard({
     borderTop: `3px solid ${borderColor}`,
     borderRadius: 8,
     padding: "1.5rem 1.75rem",
-    boxShadow: hovered
-      ? "0 4px 16px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.08)"
-      : "0 2px 8px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04)",
-    transition: "box-shadow 0.15s ease",
+    boxShadow: hovered ? theme.shadowCardHover : theme.shadowCard,
+    transition: `box-shadow ${theme.transitionBase}`,
+    cursor: "pointer",
   };
 
   const labelStyle = {
@@ -79,7 +94,7 @@ export default function KpiCard({
 
   const deltaStyle = {
     fontSize: "0.8rem",
-    color: theme.textSecondary,
+    color: deltaColor(delta),
     marginBottom: footnote ? "0.25rem" : 0,
   };
 
@@ -91,6 +106,8 @@ export default function KpiCard({
     textOverflow: "ellipsis",
   };
 
+  const hasSparkline = Array.isArray(sparklineData) && sparklineData.length > 0;
+
   return (
     <div
       style={cardStyle}
@@ -101,6 +118,29 @@ export default function KpiCard({
       <div style={valueStyle}>{formatValue(value)}</div>
       {delta    && <div style={deltaStyle}>{delta}</div>}
       {footnote && <div style={footnoteStyle}>{footnote}</div>}
+      {hasSparkline && (
+        <div style={{ marginTop: "0.75rem" }}>
+          <ResponsiveContainer width="100%" height={44}>
+            <AreaChart data={sparklineData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="sparklineAreaFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor={theme.primaryBlue} stopOpacity={0.18} />
+                  <stop offset="95%" stopColor={theme.primaryBlue} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={theme.primaryBlue}
+                strokeWidth={1.5}
+                fill="url(#sparklineAreaFill)"
+                dot={false}
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }

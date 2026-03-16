@@ -1,7 +1,7 @@
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,7 +14,7 @@ const styles = {
     background: theme.surface,
     border: `1px solid ${theme.border}`,
     borderRadius: 8,
-    boxShadow: "0 1px 3px rgba(0,0,0,.06)",
+    boxShadow: theme.shadowSubtle,
     overflow: "hidden",
   },
   tableTitle: {
@@ -42,7 +42,13 @@ export default function TrendChart({ days }) {
       <div style={styles.tableTitle}>Failure Trend — last 30 days</div>
       <div style={{ padding: "1.25rem 1rem 1rem 0" }}>
         <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={days} margin={{ top: 4, right: 24, bottom: 4, left: 0 }}>
+          <AreaChart data={days} margin={{ top: 4, right: 24, bottom: 4, left: 0 }}>
+            <defs>
+              <linearGradient id="trendAreaFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor={theme.primaryBlue} stopOpacity={0.18} />
+                <stop offset="95%" stopColor={theme.primaryBlue} stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={theme.divider} />
             <XAxis
               dataKey="date"
@@ -61,15 +67,16 @@ export default function TrendChart({ days }) {
               labelStyle={{ fontWeight: 600, color: theme.textPrimary }}
               contentStyle={{ fontSize: "0.85rem" }}
             />
-            <Line
+            <Area
               type="monotone"
               dataKey="failures"
               stroke={theme.primaryBlue}
               strokeWidth={2}
+              fill="url(#trendAreaFill)"
               dot={false}
               activeDot={{ r: 4 }}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>
