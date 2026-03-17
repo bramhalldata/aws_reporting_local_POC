@@ -101,6 +101,7 @@ export default function SentToUdm() {
   const regionSummary = artifacts["region_summary.json"];
   const trend30d      = artifacts["trend_30d.json"];
   const lifetime      = artifacts["lifetime_detail.json"];
+  const recent        = artifacts["recent_detail_30d.json"];
 
   return (
     <div>
@@ -114,31 +115,34 @@ export default function SentToUdm() {
       {/* KPI Row */}
       <div style={styles.kpiRow}>
         <KpiCard
-          label="Regions Active (All Time)"
-          value={summary.total_regions_active}
-          tone="neutral"
-          footnote={`Since ${summary.earliest_event_ts?.slice(0, 10)}`}
-        />
-        <KpiCard
-          label="Sites Active (All Time)"
-          value={summary.total_sites_active}
-          tone="neutral"
-        />
-        <KpiCard
           label="Total CCDs Sent"
           value={summary.total_ccds_sent}
           tone="neutral"
           footnote="All time"
         />
         <KpiCard
-          label="Regions Active (30d)"
-          value={summary.regions_active_30d}
+          label="First CCD Sent"
+          value={summary.earliest_event_ts?.slice(0, 10)}
           tone="neutral"
+          valueFontSize="1.4rem"
         />
         <KpiCard
-          label="Sites Active (30d)"
+          label="Most Recent CCD Sent"
+          value={summary.latest_event_ts?.slice(0, 10)}
+          tone="neutral"
+          valueFontSize="1.4rem"
+        />
+        <KpiCard
+          label="Regions Active"
+          value={summary.regions_active_30d}
+          tone="neutral"
+          footnote="Last 30 days"
+        />
+        <KpiCard
+          label="Sites Active"
           value={summary.sites_active_30d}
           tone="neutral"
+          footnote="Last 30 days"
         />
       </div>
 
@@ -149,29 +153,36 @@ export default function SentToUdm() {
           <thead>
             <tr>
               <th style={styles.th}>Region</th>
-              <th style={styles.th}>Sites</th>
               <th style={styles.th}>CCDs Sent</th>
-              <th style={styles.th}>First Seen</th>
-              <th style={styles.th}>Last Seen</th>
+              <th style={styles.th}>First CCD Sent</th>
+              <th style={styles.th}>Most Recent CCD Sent</th>
             </tr>
           </thead>
           <tbody>
             {regionSummary.regions.map((r) => (
               <tr key={r.region}>
                 <td style={styles.td}>{r.region}</td>
-                <td style={styles.td}>{r.site_count}</td>
                 <td style={styles.td}>{r.ccd_count.toLocaleString()}</td>
                 <td style={styles.td}>{fmtTs(r.first_seen)}</td>
                 <td style={styles.td}>{fmtTs(r.last_seen)}</td>
               </tr>
             ))}
+            <tr style={{ fontWeight: 600, borderTop: `2px solid ${theme.divider}`, background: theme.background }}>
+              <td style={styles.td}><strong>Grand Total</strong></td>
+              <td style={styles.td}><strong>{regionSummary.regions.reduce((sum, r) => sum + r.ccd_count, 0).toLocaleString()}</strong></td>
+              <td style={styles.td}><strong>{fmtTs(regionSummary.regions.map(r => r.first_seen).sort()[0])}</strong></td>
+              <td style={styles.td}><strong>{fmtTs([...regionSummary.regions.map(r => r.last_seen)].sort().at(-1))}</strong></td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       {/* 30-Day Trend Chart */}
       <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>CCDs Sent to UDM — Last 30 Days</h3>
+        <h3 style={styles.sectionTitle}>CCDs Sent To UDM by Region (Last 30 Days)</h3>
+        <p style={{ color: theme.textMuted, fontSize: "0.75rem", margin: "-0.5rem 0 1rem 0" }}>
+          Regional breakdown coming in a future release.
+        </p>
         {trend30d.days.length === 0 ? (
           <p style={{ color: theme.textMuted, fontSize: "0.875rem", margin: 0 }}>
             No trend data available.
@@ -219,17 +230,17 @@ export default function SentToUdm() {
         )}
       </div>
 
-      {/* Lifetime Detail Table */}
+      {/* Lifetime Detail Table — `site` = Facility in this POC; production ETL will add `facility_name` */}
       <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>Site Detail — All Time</h3>
+        <h3 style={styles.sectionTitle}>Facility Detail — All Time</h3>
         <table style={styles.table}>
           <thead>
             <tr>
               <th style={styles.th}>Region</th>
-              <th style={styles.th}>Site</th>
+              <th style={styles.th}>Facility</th>
               <th style={styles.th}>CCDs Sent</th>
-              <th style={styles.th}>First Seen</th>
-              <th style={styles.th}>Last Seen</th>
+              <th style={styles.th}>First CCD</th>
+              <th style={styles.th}>Most Recent CCD</th>
             </tr>
           </thead>
           <tbody>
@@ -244,6 +255,39 @@ export default function SentToUdm() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Recent 30-Day Detail Table */}
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Site Activity — Last 30 Days</h3>
+        {recent.rows.length === 0 ? (
+          <p style={{ color: theme.textMuted, fontSize: "0.875rem", margin: 0 }}>
+            No sites active in the last 30 days.
+          </p>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Region</th>
+                <th style={styles.th}>Facility</th>
+                <th style={styles.th}>CCDs Sent</th>
+                <th style={styles.th}>First Sent (30d)</th>
+                <th style={styles.th}>Last Sent (30d)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recent.rows.map((r) => (
+                <tr key={`${r.region}-${r.site}`}>
+                  <td style={styles.td}>{r.region}</td>
+                  <td style={styles.td}>{r.site}</td>
+                  <td style={styles.td}>{r.ccd_count.toLocaleString()}</td>
+                  <td style={styles.td}>{fmtTs(r.first_seen_30d)}</td>
+                  <td style={styles.td}>{fmtTs(r.last_seen_30d)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

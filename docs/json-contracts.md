@@ -136,3 +136,128 @@ Each dashboard produces a set of payload artifacts. Schemas are defined in
 |------|--------|-------------|
 | `summary.json` | `pipeline_health_summary_schema.py` | Document and site KPIs |
 | `failure_types.json` | `pipeline_health_failure_types_schema.py` | Failure type breakdown |
+
+### `sent_to_udm`
+
+| File | Schema | Description |
+|------|--------|-------------|
+| `summary.json` | `sent_to_udm_summary_schema.py` | Lifetime and 30-day KPI totals |
+| `region_summary.json` | `sent_to_udm_region_summary_schema.py` | Per-region CCD counts, site counts, and date range |
+| `trend_30d.json` | `sent_to_udm_trend_30d_schema.py` | 30-day daily CCD sent counts (aggregate) |
+| `lifetime_detail.json` | `sent_to_udm_lifetime_detail_schema.py` | Per-site lifetime CCD counts and date range |
+| `recent_detail_30d.json` | `sent_to_udm_recent_detail_30d_schema.py` | Per-site CCD counts within the last 30-day window |
+
+#### `summary.json`
+
+```json
+{
+  "schema_version": "1.2.0",
+  "generated_at": "2026-03-17T18:51:42+00:00",
+  "report_ts": "2026-03-17T18:51:42Z",
+  "total_regions_active": 4,
+  "total_sites_active": 6,
+  "total_ccds_sent": 300,
+  "earliest_event_ts": "2026-01-06 23:59:14-05:00",
+  "latest_event_ts": "2026-03-07 01:07:46-05:00",
+  "regions_active_30d": 4,
+  "sites_active_30d": 6
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_regions_active` | integer | Distinct regions with at least one CCD sent (all time) |
+| `total_sites_active` | integer | Distinct sites with at least one CCD sent (all time) |
+| `total_ccds_sent` | integer | Total CCD count across all regions and sites (all time) |
+| `earliest_event_ts` | string | `MIN(timestamp)` across all CCD events — data-derived, not `report_ts`-relative |
+| `latest_event_ts` | string | `MAX(timestamp)` across all CCD events — data-derived, not `report_ts`-relative |
+| `regions_active_30d` | integer | Distinct regions active within the last 30 days of `report_ts` |
+| `sites_active_30d` | integer | Distinct sites active within the last 30 days of `report_ts` |
+
+#### `region_summary.json`
+
+```json
+{
+  "schema_version": "1.2.0",
+  "generated_at": "2026-03-17T18:51:42+00:00",
+  "report_ts": "2026-03-17T18:51:42Z",
+  "regions": [
+    { "region": "AZ", "site_count": 2, "ccd_count": 87,
+      "first_seen": "2026-01-06 23:59:14-05:00",
+      "last_seen": "2026-03-07 01:07:46-05:00" }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `regions[].region` | string | Region identifier |
+| `regions[].site_count` | integer | Number of distinct sites in this region (all time) |
+| `regions[].ccd_count` | integer | Total CCDs sent from this region (all time) |
+| `regions[].first_seen` | string | Earliest CCD timestamp for this region (all time) |
+| `regions[].last_seen` | string | Most recent CCD timestamp for this region (all time) |
+
+#### `trend_30d.json`
+
+```json
+{
+  "schema_version": "1.2.0",
+  "generated_at": "2026-03-17T18:51:42+00:00",
+  "report_ts": "2026-03-17T18:51:42Z",
+  "days": [
+    { "date": "2026-02-16", "ccd_count": 4 }
+  ]
+}
+```
+
+**Note:** This artifact uses `ccd_count` — not `failures`. The filename `trend_30d.json` is shared with
+`dlq_operations`, but the schemas are not interchangeable. Each artifact is scoped to its dashboard
+directory. Days with no CCD activity are included with `ccd_count: 0` (zero-filled via date spine).
+
+#### `lifetime_detail.json`
+
+```json
+{
+  "schema_version": "1.2.0",
+  "generated_at": "2026-03-17T18:51:42+00:00",
+  "report_ts": "2026-03-17T18:51:42Z",
+  "rows": [
+    { "region": "AZ", "site": "az_site_1", "ccd_count": 87,
+      "first_seen": "2026-01-06 23:59:14-05:00",
+      "last_seen": "2026-03-07 01:07:46-05:00" }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rows[].region` | string | Region identifier |
+| `rows[].site` | string | Site identifier (maps to "Facility" in portal display) |
+| `rows[].ccd_count` | integer | Total CCDs sent from this site (all time) |
+| `rows[].first_seen` | string | Earliest CCD timestamp for this site (all time) |
+| `rows[].last_seen` | string | Most recent CCD timestamp for this site (all time) |
+
+#### `recent_detail_30d.json`
+
+```json
+{
+  "schema_version": "1.2.0",
+  "generated_at": "2026-03-17T18:51:42+00:00",
+  "report_ts": "2026-03-17T18:51:42Z",
+  "window_days": 30,
+  "rows": [
+    { "region": "AZ", "site": "az_site_1", "ccd_count": 21,
+      "first_seen_30d": "2026-02-15 18:20:23-05:00",
+      "last_seen_30d": "2026-03-05 08:51:02-05:00" }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `window_days` | integer | Size of the rolling window (always `30`) |
+| `rows[].region` | string | Region identifier |
+| `rows[].site` | string | Site identifier |
+| `rows[].ccd_count` | integer | CCDs sent from this site within the window |
+| `rows[].first_seen_30d` | string | Earliest CCD timestamp within the window. Note the `_30d` suffix — distinguishes from `lifetime_detail.json`'s `first_seen` |
+| `rows[].last_seen_30d` | string | Most recent CCD timestamp within the window. Note the `_30d` suffix — distinguishes from `lifetime_detail.json`'s `last_seen` |
