@@ -1,8 +1,43 @@
 {
   "client_id": "contexture",
   "env_id": "prod",
-  "generated_at": "2026-03-17T18:51:42+00:00",
+  "generated_at": "2026-03-17T21:10:18+00:00",
   "runs": [
+    {
+      "artifacts": [
+        {
+          "name": "summary.json",
+          "path": "contexture/prod/runs/20260317T211018Z/sent_to_udm/summary.json",
+          "type": "summary"
+        },
+        {
+          "name": "region_summary.json",
+          "path": "contexture/prod/runs/20260317T211018Z/sent_to_udm/region_summary.json",
+          "type": "region_summary"
+        },
+        {
+          "name": "trend_30d.json",
+          "path": "contexture/prod/runs/20260317T211018Z/sent_to_udm/trend_30d.json",
+          "type": "trend_30d"
+        },
+        {
+          "name": "lifetime_detail.json",
+          "path": "contexture/prod/runs/20260317T211018Z/sent_to_udm/lifetime_detail.json",
+          "type": "lifetime_detail"
+        },
+        {
+          "name": "recent_detail_30d.json",
+          "path": "contexture/prod/runs/20260317T211018Z/sent_to_udm/recent_detail_30d.json",
+          "type": "recent_detail_30d"
+        }
+      ],
+      "dashboard_id": "sent_to_udm",
+      "generated_at": "2026-03-17T21:10:18+00:00",
+      "report_ts": "2026-03-17T21:10:18Z",
+      "run_id": "20260317T211018Z",
+      "schema_version": "1.2.0",
+      "status": "SUCCESS"
+    },
     {
       "artifacts": [
         {

@@ -117,6 +117,7 @@ The portal adds only a leading `/` — it never constructs or modifies the path.
 |-----|---------|
 | `http://localhost:5173/default/local/dlq_operations` | DLQ Operations dashboard for default/local |
 | `http://localhost:5173/default/local/pipeline_health` | Pipeline Health for default/local |
+| `http://localhost:5173/contexture/prod/sent_to_udm` | CCD Sent to UDM for contexture/prod |
 | `http://localhost:5173/contexture/prod/dlq_operations` | DLQ Operations for contexture/prod |
 | `http://localhost:5173/default/local/history` | Run history list for default/local |
 | `http://localhost:5173/contexture/prod/history` | Run history list for contexture/prod (isolated) |
@@ -128,18 +129,22 @@ The portal adds only a leading `/` — it never constructs or modifies the path.
 
 ## Adding a New Dashboard
 
-Adding a new dashboard requires only one line in `portal/src/dashboards/index.js`:
+Adding a new dashboard requires one import and one entry in `portal/src/dashboards/index.js`:
 
 ```js
-export const dashboards = {
-  dlq_operations: DlqOperations,
-  pipeline_health: PipelineHealth,
-  my_new_dashboard: MyNewDashboard,   // ← add here
-};
+import MyNewDashboard from "./my_new_dashboard/MyNewDashboard.jsx";
+
+export const dashboardRegistry = [
+  { id: "dlq_operations",   label: "DLQ Operations",   component: DlqOperations   },
+  { id: "pipeline_health",  label: "Pipeline Health",  component: PipelineHealth  },
+  { id: "sent_to_udm",      label: "CCD Sent to UDM",  component: SentToUdm       },
+  { id: "my_new_dashboard", label: "My New Dashboard", component: MyNewDashboard  }, // ← add here
+];
 ```
 
 The route `/:client/:env/my_new_dashboard` is registered automatically. The NavBar tab
-appears if `my_new_dashboard` is listed in `dashboardMeta`. No routing code changes needed.
+appears automatically — no additional registration is needed. Array order controls tab order;
+the first entry is the default landing page.
 
 ---
 

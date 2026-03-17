@@ -71,6 +71,32 @@ artifacts/
           dlq_operations/ ...
 ```
 
+## Concrete Example (contexture/prod)
+
+```
+artifacts/
+  contexture/
+    prod/
+      current/
+        run_history.json
+        sent_to_udm/
+          manifest.json
+          summary.json
+          region_summary.json
+          trend_30d.json
+          lifetime_detail.json
+          recent_detail_30d.json
+      runs/
+        20260317T185142Z/
+          sent_to_udm/
+            manifest.json
+            summary.json
+            region_summary.json
+            trend_30d.json
+            lifetime_detail.json
+            recent_detail_30d.json
+```
+
 ---
 
 ## Key Principles

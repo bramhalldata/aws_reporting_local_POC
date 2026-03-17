@@ -74,27 +74,34 @@ Run once to create the data file, or re-run to regenerate with a fresh seed.
 python data/generate_fixtures.py
 ```
 
-Output: `data/parquet/ccd_failures.parquet` (200 rows, 5 sites, 10-day window)
+Output:
+- `data/parquet/ccd_failures.parquet` — DLQ failure events (200 rows, 5 sites, 10-day window)
+- `data/parquet/ccd_sent_to_udm.parquet` — CCD files sent to UDM (300 rows, 6 sites, 60-day window)
 
 ### Step 3 — Run the publisher
 
 ```bash
 publisher run --env local --dashboard dlq_operations
 publisher run --env local --dashboard pipeline_health
+
+# Client-scoped dashboard (uses contexture/prod artifact path)
+publisher run --client contexture --env prod --dashboard sent_to_udm
 ```
 
-**`--env local`** runs the local POC stack: DuckDB in-memory with
-`data/parquet/ccd_failures.parquet` as the data source. This is the local substitute for
-AWS Athena + S3 Parquet gold tables. Future `--env` values (e.g. `prod`) will route the
-same `run()` function to real Athena and S3.
+**`--env local`** runs the local POC stack: DuckDB in-memory with the Parquet data files
+as the data source. This is the local substitute for AWS Athena + S3 Parquet gold tables.
+`--client` and `--env` control the artifact output scope.
 
-Artifacts are written to the `default/local` scope (the local development default):
+Artifacts are written to the scoped path (default scope is `default/local`):
 
 ```
 artifacts/default/local/current/dlq_operations/   ← dashboard artifacts (current run)
 artifacts/default/local/current/pipeline_health/
 artifacts/default/local/current/run_history.json  ← run history index
 artifacts/default/local/runs/{run_id}/             ← immutable historical snapshots
+
+artifacts/contexture/prod/current/sent_to_udm/     ← client-scoped dashboard artifacts
+artifacts/contexture/prod/current/run_history.json
 ```
 
 #### Legacy path (no editable install required)
@@ -124,6 +131,7 @@ Example URLs:
 |-----|-----------|
 | `http://localhost:5173/default/local/dlq_operations` | DLQ Operations |
 | `http://localhost:5173/default/local/pipeline_health` | Pipeline Health |
+| `http://localhost:5173/contexture/prod/sent_to_udm` | CCD Sent to UDM (contexture/prod) |
 | `http://localhost:5173/default/local/history` | Run History |
 
 ---
@@ -158,7 +166,8 @@ aws_reporting_POC/
 ├── data/
 │   ├── generate_fixtures.py           # ETL substitute — generates Parquet data
 │   └── parquet/
-│       └── ccd_failures.parquet       # Generated (gitignored)
+│       ├── ccd_failures.parquet       # Generated (gitignored)
+│       └── ccd_sent_to_udm.parquet    # Generated (gitignored)
 │
 ├── sql/
 │   └── athena_views.sql               # Metric definitions (DuckDB / Athena SQL)
@@ -166,11 +175,13 @@ aws_reporting_POC/
 ├── src/
 │   └── publisher/
 │       ├── main.py                    # Publisher entry point
-│       └── validators/
-│           ├── run_history_schema.py  # JSON Schema for run_history.json (v1.2.0)
-│           ├── summary_schema.py      # JSON Schema for summary.json
-│           ├── manifest_schema.py     # JSON Schema for manifest.json
-│           └── ...                   # Per-dashboard artifact schemas
+│       ├── validators/
+│       │   ├── run_history_schema.py  # JSON Schema for run_history.json (v1.2.0)
+│       │   ├── summary_schema.py      # JSON Schema for summary.json
+│       │   ├── manifest_schema.py     # JSON Schema for manifest.json
+│       │   └── ...                   # Per-dashboard artifact schemas
+│       └── tests/
+│           └── test_sent_to_udm_*_schema.py  # Validator unit tests (20 tests)
 │
 ├── artifacts/
 │   ├── .gitkeep
@@ -200,7 +211,8 @@ aws_reporting_POC/
 │       ├── dashboards/
 │       │   ├── index.js               # Dashboard registry
 │       │   ├── dlq_operations/
-│       │   └── pipeline_health/
+│       │   ├── pipeline_health/
+│       │   └── sent_to_udm/
 │       └── pages/
 │           ├── RunHistory.jsx
 │           └── RunDetail.jsx

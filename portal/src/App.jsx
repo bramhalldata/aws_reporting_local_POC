@@ -10,8 +10,8 @@ import RunCompare from "./pages/RunCompare.jsx";
 const DEFAULT_CLIENT = "default";
 const DEFAULT_ENV    = "local";
 
-// Registry-driven default: first entry in dashboardMeta.
-// Changing the first entry in dashboardMeta changes the default landing page.
+// Registry-driven default: first entry in dashboardRegistry.
+// Changing the first entry in dashboardRegistry changes the default landing page.
 const defaultDashboard = dashboardRegistry[0].id;
 
 // Legacy redirect components — Navigate cannot inject dynamic route params,
