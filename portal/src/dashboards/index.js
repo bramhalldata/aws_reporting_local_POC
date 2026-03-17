@@ -1,5 +1,6 @@
 import DlqOperations  from "./dlq_operations/DlqOperations.jsx";
 import PipelineHealth from "./pipeline_health/PipelineHealth.jsx";
+import SentToUdm     from "./sent_to_udm/SentToUdm.jsx";
 
 /**
  * dashboardRegistry — single source of truth for all registered dashboards.
@@ -20,4 +21,5 @@ import PipelineHealth from "./pipeline_health/PipelineHealth.jsx";
 export const dashboardRegistry = [
   { id: "dlq_operations",  label: "DLQ Operations",  component: DlqOperations  },
   { id: "pipeline_health", label: "Pipeline Health", component: PipelineHealth },
+  { id: "sent_to_udm",     label: "CCD Sent to UDM", component: SentToUdm     },
 ];

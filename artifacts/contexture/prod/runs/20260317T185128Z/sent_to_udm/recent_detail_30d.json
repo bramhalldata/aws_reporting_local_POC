@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-03-17T18:51:28+00:00",
+  "report_ts": "2026-03-17T18:51:28Z",
+  "rows": [
+    {
+      "ccd_count": 21,
+      "first_seen_30d": "2026-02-15 18:20:23-05:00",
+      "last_seen_30d": "2026-03-05 08:51:02-05:00",
+      "region": "AZ",
+      "site": "az_site_1"
+    },
+    {
+      "ccd_count": 16,
+      "first_seen_30d": "2026-02-17 01:30:13-05:00",
+      "last_seen_30d": "2026-03-07 01:07:46-05:00",
+      "region": "AZ",
+      "site": "az_site_2"
+    },
+    {
+      "ccd_count": 25,
+      "first_seen_30d": "2026-02-16 03:57:56-05:00",
+      "last_seen_30d": "2026-03-06 07:22:32-05:00",
+      "region": "CO",
+      "site": "co_site_1"
+    },
+    {
+      "ccd_count": 16,
+      "first_seen_30d": "2026-02-16 20:50:11-05:00",
+      "last_seen_30d": "2026-03-06 00:28:01-05:00",
+      "region": "UNKNOWN",
+      "site": "unknown_site_1"
+    },
+    {
+      "ccd_count": 14,
+      "first_seen_30d": "2026-02-17 14:32:30-05:00",
+      "last_seen_30d": "2026-03-06 14:06:35-05:00",
+      "region": "WS",
+      "site": "ws_site_1"
+    },
+    {
+      "ccd_count": 19,
+      "first_seen_30d": "2026-02-17 04:55:25-05:00",
+      "last_seen_30d": "2026-03-06 06:47:37-05:00",
+      "region": "WS",
+      "site": "ws_site_2"
+    }
+  ],
+  "schema_version": "1.2.0",
+  "window_days": 30
+}

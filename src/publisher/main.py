@@ -39,6 +39,11 @@ from validators import (
     pipeline_health_failure_types_schema,
     pipeline_health_summary_schema,
     run_history_schema,
+    sent_to_udm_lifetime_detail_schema,
+    sent_to_udm_recent_detail_30d_schema,
+    sent_to_udm_region_summary_schema,
+    sent_to_udm_summary_schema,
+    sent_to_udm_trend_30d_schema,
     summary_schema,
     top_sites_schema,
     trend_30d_schema,
@@ -515,6 +520,131 @@ def run(report_ts: str, *, env: str, dashboard: str, client: str | None = None) 
         artifacts_to_write = {
             "summary.json":       ph_summary,
             "failure_types.json": ph_failure_types,
+        }
+
+    elif dashboard == "sent_to_udm":
+        udm_parquet_path = os.path.join(REPO_ROOT, "data", "parquet", "ccd_sent_to_udm.parquet")
+        if not os.path.exists(udm_parquet_path):
+            print(
+                f"ERROR: Parquet file not found: {udm_parquet_path}\n"
+                "Run: python data/generate_fixtures.py",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        con.execute(
+            f"CREATE TABLE ccd_sent_to_udm AS SELECT * FROM read_parquet('{udm_parquet_path}')"
+        )
+
+        # sent_to_udm_summary returns a single row with 7 columns.
+        # Column order matches the SQL contract in sql/athena_views.sql — do not reorder.
+        # 0: total_regions_active  1: total_sites_active  2: total_ccds_sent
+        # 3: earliest_event_ts     4: latest_event_ts
+        # 5: regions_active_30d    6: sites_active_30d
+        summary_row = con.execute(blocks["sent_to_udm_summary"]).fetchone()
+        udm_summary = {
+            "schema_version":       SCHEMA_VERSION,
+            "generated_at":         generated_at,
+            "report_ts":            report_ts,
+            "total_regions_active": int(summary_row[0]),
+            "total_sites_active":   int(summary_row[1]),
+            "total_ccds_sent":      int(summary_row[2]),
+            "earliest_event_ts":    str(summary_row[3]),
+            "latest_event_ts":      str(summary_row[4]),
+            "regions_active_30d":   int(summary_row[5]),
+            "sites_active_30d":     int(summary_row[6]),
+        }
+        try:
+            sent_to_udm_summary_schema.validate(udm_summary)
+        except jsonschema.ValidationError as exc:
+            print(f"ERROR: summary.json schema validation failed: {exc.message}", file=sys.stderr)
+            sys.exit(1)
+
+        region_rows = con.execute(blocks["sent_to_udm_region_summary"]).fetchall()
+        udm_region_summary = {
+            "schema_version": SCHEMA_VERSION,
+            "generated_at":   generated_at,
+            "report_ts":      report_ts,
+            "regions": [
+                {
+                    "region":     row[0],
+                    "site_count": int(row[1]),
+                    "ccd_count":  int(row[2]),
+                    "first_seen": str(row[3]),
+                    "last_seen":  str(row[4]),
+                }
+                for row in region_rows
+            ],
+        }
+        try:
+            sent_to_udm_region_summary_schema.validate(udm_region_summary)
+        except jsonschema.ValidationError as exc:
+            print(f"ERROR: region_summary.json schema validation failed: {exc.message}", file=sys.stderr)
+            sys.exit(1)
+
+        trend_rows = con.execute(blocks["sent_to_udm_trend_30d"]).fetchall()
+        udm_trend_30d = {
+            "schema_version": SCHEMA_VERSION,
+            "generated_at":   generated_at,
+            "report_ts":      report_ts,
+            "days": [{"date": str(row[0]), "ccd_count": int(row[1])} for row in trend_rows],
+        }
+        try:
+            sent_to_udm_trend_30d_schema.validate(udm_trend_30d)
+        except jsonschema.ValidationError as exc:
+            print(f"ERROR: trend_30d.json schema validation failed: {exc.message}", file=sys.stderr)
+            sys.exit(1)
+
+        lifetime_rows = con.execute(blocks["sent_to_udm_lifetime_detail"]).fetchall()
+        udm_lifetime_detail = {
+            "schema_version": SCHEMA_VERSION,
+            "generated_at":   generated_at,
+            "report_ts":      report_ts,
+            "rows": [
+                {
+                    "region":     row[0],
+                    "site":       row[1],
+                    "ccd_count":  int(row[2]),
+                    "first_seen": str(row[3]),
+                    "last_seen":  str(row[4]),
+                }
+                for row in lifetime_rows
+            ],
+        }
+        try:
+            sent_to_udm_lifetime_detail_schema.validate(udm_lifetime_detail)
+        except jsonschema.ValidationError as exc:
+            print(f"ERROR: lifetime_detail.json schema validation failed: {exc.message}", file=sys.stderr)
+            sys.exit(1)
+
+        recent_rows = con.execute(blocks["sent_to_udm_recent_detail_30d"]).fetchall()
+        udm_recent_detail_30d = {
+            "schema_version": SCHEMA_VERSION,
+            "generated_at":   generated_at,
+            "report_ts":      report_ts,
+            "window_days":    30,
+            "rows": [
+                {
+                    "region":         row[0],
+                    "site":           row[1],
+                    "ccd_count":      int(row[2]),
+                    "first_seen_30d": str(row[3]),
+                    "last_seen_30d":  str(row[4]),
+                }
+                for row in recent_rows
+            ],
+        }
+        try:
+            sent_to_udm_recent_detail_30d_schema.validate(udm_recent_detail_30d)
+        except jsonschema.ValidationError as exc:
+            print(f"ERROR: recent_detail_30d.json schema validation failed: {exc.message}", file=sys.stderr)
+            sys.exit(1)
+
+        artifacts_to_write = {
+            "summary.json":           udm_summary,
+            "region_summary.json":    udm_region_summary,
+            "trend_30d.json":         udm_trend_30d,
+            "lifetime_detail.json":   udm_lifetime_detail,
+            "recent_detail_30d.json": udm_recent_detail_30d,
         }
 
     else:

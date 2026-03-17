@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>claude-startup-guide.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="claude-code-guide--aws-client-reporting-platform">Claude Code Guide — AWS Client Reporting Platform</h1>
+<h2 id="purpose">Purpose</h2>
+<p>This guide explains how to use Claude Code to safely build and maintain the AWS client reporting platform.</p>
+<p>It translates the architecture into clear rules for:</p>
+<ul>
+<li>repository structure</li>
+<li>development workflow</li>
+<li>architecture boundaries</li>
+<li>multi‑client scaling</li>
+<li>CI/CD and operations</li>
+</ul>
+<p>Claude accelerates development, but <strong>humans define and protect the architecture</strong>.</p>
+<hr>
+<h1 id="platform-overview">Platform Overview</h1>
+<h2 id="single%E2%80%91page-architecture-diagram">Single‑Page Architecture Diagram</h2>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+    A["Operational Systems"]
+    B["ETL Pipelines"]
+    C["Gold Reporting Tables\nParquet in S3"]
+    D["Athena Reporting Views\nMetric Definitions"]
+    E["Publisher\nBuild and Validate Artifacts"]
+    F["JSON Artifacts\nVersioned in S3"]
+    G["CloudFront"]
+    H["React Portal"]
+    I["Client and Environment Config"]
+    J["MySQL\nConfig Metadata Audit"]
+    K["OpenSearch\nDiagnostics Aggregations"]
+    L["Optional AI Insights"]
+
+    A --> B --> C --> D --> E --> F --> G --> H
+    I --> E
+    I --> H
+    J --> E
+    K --> E
+    F --> L
+    L --> H
+
+    style A fill:#1D4ED8,stroke:#1E3A8A,stroke-width:3px,color:#FFFFFF
+    style B fill:#2563EB,stroke:#1E3A8A,stroke-width:3px,color:#FFFFFF
+    style C fill:#0F766E,stroke:#134E4A,stroke-width:3px,color:#FFFFFF
+    style D fill:#0D9488,stroke:#134E4A,stroke-width:3px,color:#FFFFFF
+    style E fill:#7C3AED,stroke:#4C1D95,stroke-width:3px,color:#FFFFFF
+    style F fill:#9333EA,stroke:#4C1D95,stroke-width:3px,color:#FFFFFF
+    style G fill:#EA580C,stroke:#9A3412,stroke-width:3px,color:#FFFFFF
+    style H fill:#DC2626,stroke:#7F1D1D,stroke-width:3px,color:#FFFFFF
+    style I fill:#475569,stroke:#1E293B,stroke-width:3px,color:#FFFFFF
+    style J fill:#64748B,stroke:#1E293B,stroke-width:3px,color:#FFFFFF
+    style K fill:#64748B,stroke:#1E293B,stroke-width:3px,color:#FFFFFF
+    style L fill:#BE185D,stroke:#831843,stroke-width:3px,color:#FFFFFF
+</div></code></pre>
+<h3 id="platform-flow">Platform Flow</h3>
+<pre class="hljs"><code><div>Operational Systems
+ → ETL Pipelines
+ → Gold Reporting Tables (Parquet)
+ → Athena Reporting Views
+ → Publisher
+ → JSON Artifacts (S3)
+ → CloudFront
+ → React Portal
+</div></code></pre>
+<h3 id="key-principles">Key Principles</h3>
+<ul>
+<li><strong>Parquet + Athena are the reporting backbone</strong></li>
+<li><strong>Publisher generates deterministic artifacts</strong></li>
+<li><strong>JSON artifacts are the portal contract</strong></li>
+<li><strong>Portal is presentation‑only</strong></li>
+</ul>
+<h3 id="supporting-systems">Supporting Systems</h3>
+<ul>
+<li><strong>MySQL</strong> – configuration, metadata, and audit context</li>
+<li><strong>OpenSearch</strong> – diagnostics and operational aggregations</li>
+<li><strong>AI (optional)</strong> – insights and anomaly detection</li>
+</ul>
+<h3 id="design-goals">Design Goals</h3>
+<ul>
+<li>support many clients</li>
+<li>support multiple environments</li>
+<li>deterministic reporting</li>
+<li>low operational cost</li>
+<li>cloud‑native scalability</li>
+</ul>
+<hr>
+<h1 id="repository-structure">Repository Structure</h1>
+<pre class="hljs"><code><div>repo-root/
+  CLAUDE.md
+  README.md
+
+  docs/
+    architecture.md
+    json-contracts.md
+    athena-views.md
+    publisher-runbook.md
+    portal-ui.md
+
+  skills/
+    build-publisher.md
+    add-artifact.md
+    update-athena-view.md
+    build-react-panel.md
+    investigate-failed-publish.md
+
+  src/
+    publisher/
+    portal/
+    shared/
+
+  tests/
+
+  .github/
+    pull_request_template.md
+    workflows/
+      ci.yml
+</div></code></pre>
+<h3 id="directory-roles">Directory Roles</h3>
+<ul>
+<li><strong>CLAUDE.md</strong> – rules Claude must follow</li>
+<li><strong>docs/</strong> – architecture and contracts</li>
+<li><strong>skills/</strong> – reusable Claude task playbooks</li>
+<li><strong>src/</strong> – application code</li>
+<li><strong>tests/</strong> – validation and regression tests</li>
+<li><strong>.github/workflows/</strong> – CI pipelines</li>
+</ul>
+<hr>
+<h1 id="recommended-claudemd">Recommended CLAUDE.md</h1>
+<pre class="hljs"><code><div><span class="hljs-section"># CLAUDE.md</span>
+
+<span class="hljs-section">## Purpose</span>
+This repository implements a cloud‑native client reporting platform.
+
+Architecture:
+Operational Systems → ETL → Parquet Gold Tables → Athena Views → Publisher → JSON Artifacts → React Portal
+
+<span class="hljs-section">## Architecture Rules</span>
+<span class="hljs-bullet">1. </span>Athena defines reporting metrics.
+<span class="hljs-bullet">2. </span>Publisher generates deterministic artifacts.
+<span class="hljs-bullet">3. </span>JSON artifacts are the portal contract.
+<span class="hljs-bullet">4. </span>Parquet is the analytical storage format.
+<span class="hljs-bullet">5. </span>Portal renders artifacts only.
+<span class="hljs-bullet">6. </span>AI may interpret results but cannot generate metrics.
+<span class="hljs-bullet">7. </span>Publishing must be restart‑safe and auditable.
+
+<span class="hljs-section">## Data Sources</span>
+<span class="hljs-bullet">- </span>Athena: metrics
+<span class="hljs-bullet">- </span>MySQL: configuration / metadata
+<span class="hljs-bullet">- </span>OpenSearch: diagnostics
+
+<span class="hljs-section">## Required Artifacts</span>
+summary.json
+trend_30d.json
+top_sites.json
+exceptions.json
+downloads.json
+manifest.json
+
+Optional AI artifacts
+insights.json
+anomalies.json
+
+<span class="hljs-section">## Engineering Standards</span>
+<span class="hljs-bullet">- </span>keep changes small
+<span class="hljs-bullet">- </span>avoid duplicated metric logic
+<span class="hljs-bullet">- </span>centralize metrics in Athena
+<span class="hljs-bullet">- </span>add tests for new logic
+<span class="hljs-bullet">- </span>update documentation when contracts change
+
+<span class="hljs-section">## Development Rules</span>
+<span class="hljs-bullet">1. </span>identify impacted layers
+<span class="hljs-bullet">2. </span>propose file changes
+<span class="hljs-bullet">3. </span>implement in small steps
+<span class="hljs-bullet">4. </span>include tests
+<span class="hljs-bullet">5. </span>update documentation
+</div></code></pre>
+<hr>
+<h1 id="claude-concepts">Claude Concepts</h1>
+<h2 id="skills">Skills</h2>
+<p>Reusable task playbooks that guide Claude.</p>
+<p>Examples</p>
+<ul>
+<li>build‑publisher.md</li>
+<li>add‑artifact.md</li>
+<li>update‑athena‑view.md</li>
+<li>build‑react‑panel.md</li>
+<li>investigate‑failed‑publish.md</li>
+</ul>
+<p>Skills standardize how tasks are performed.</p>
+<hr>
+<h2 id="agents">Agents</h2>
+<p>Agents execute larger tasks such as implementing a feature or diagnosing failures.</p>
+<p>Agents rely on:</p>
+<ul>
+<li>repository code</li>
+<li>documentation</li>
+<li>CLAUDE.md rules</li>
+<li>skills</li>
+</ul>
+<hr>
+<h2 id="subagents">Subagents</h2>
+<p>Subagents break complex work into smaller steps.</p>
+<p>Example</p>
+<pre class="hljs"><code><div>Add artifact
+ → update Athena view
+ → update publisher builder
+ → update portal component
+ → add tests
+</div></code></pre>
+<hr>
+<h2 id="mcp-model-context-protocol">MCP (Model Context Protocol)</h2>
+<p>Allows Claude to access controlled external context.</p>
+<p>Examples</p>
+<ul>
+<li>repository metadata</li>
+<li>CI status</li>
+<li>Athena schemas</li>
+<li>OpenSearch logs</li>
+</ul>
+<hr>
+<h2 id="git-worktrees">Git Worktrees</h2>
+<p>Enable multiple branches simultaneously.</p>
+<pre class="hljs"><code><div>repo/
+  main/
+  feature-top-sites/
+  feature-health-banner/
+</div></code></pre>
+<p>Useful for parallel development and experimentation.</p>
+<hr>
+<h1 id="architecture-boundaries">Architecture Boundaries</h1>
+<p>These rules protect the system design.</p>
+<h3 id="metrics-originate-from-athena">Metrics originate from Athena</h3>
+<p>Metrics must be defined in Athena views.</p>
+<p>Never compute metrics in:</p>
+<ul>
+<li>publisher code</li>
+<li>React components</li>
+</ul>
+<hr>
+<h3 id="portal-is-presentation%E2%80%91only">Portal is presentation‑only</h3>
+<p>Portal responsibilities:</p>
+<ul>
+<li>load artifacts</li>
+<li>render dashboards</li>
+<li>display health and freshness</li>
+</ul>
+<p>Portal must not:</p>
+<ul>
+<li>compute metrics</li>
+<li>query operational systems</li>
+</ul>
+<hr>
+<h3 id="publisher-logic-must-be-deterministic">Publisher logic must be deterministic</h3>
+<p>Publisher responsibilities:</p>
+<ul>
+<li>query Athena</li>
+<li>assemble artifacts</li>
+<li>validate schemas</li>
+<li>publish outputs</li>
+</ul>
+<p>AI must never generate metrics.</p>
+<hr>
+<h3 id="json-artifacts-are-the-delivery-contract">JSON artifacts are the delivery contract</h3>
+<p>Schema changes require updates to:</p>
+<ul>
+<li>documentation</li>
+<li>validation logic</li>
+<li>tests</li>
+</ul>
+<hr>
+<h3 id="ai-is-an-interpretation-layer">AI is an interpretation layer</h3>
+<p>Allowed outputs</p>
+<ul>
+<li>insights.json</li>
+<li>anomalies.json</li>
+</ul>
+<p>AI must never modify source‑of‑truth metrics.</p>
+<hr>
+<h1 id="publisher-input-model">Publisher Input Model</h1>
+<p>The publisher consumes two categories of data.</p>
+<h2 id="primary-reporting-path">Primary reporting path</h2>
+<pre class="hljs"><code><div>Operational Systems
+ → ETL
+ → Parquet
+ → Athena Views
+ → Publisher
+</div></code></pre>
+<p>Use this path for:</p>
+<ul>
+<li>KPI totals</li>
+<li>time‑series metrics</li>
+<li>site rollups</li>
+<li>dashboard aggregates</li>
+</ul>
+<p>Athena and Parquet form the <strong>primary reporting backbone</strong>.</p>
+<hr>
+<h2 id="secondary-operational-inputs">Secondary operational inputs</h2>
+<p>Small operational datasets may be read directly.</p>
+<h3 id="mysql">MySQL</h3>
+<p>Used for:</p>
+<ul>
+<li>client configuration</li>
+<li>feature flags</li>
+<li>metadata</li>
+<li>audit records</li>
+</ul>
+<h3 id="opensearch">OpenSearch</h3>
+<p>Used for:</p>
+<ul>
+<li>error aggregations</li>
+<li>diagnostic summaries</li>
+<li>troubleshooting context</li>
+</ul>
+<hr>
+<h2 id="rule-of-thumb">Rule of Thumb</h2>
+<p>Large or reusable data → <strong>ETL → Parquet → Athena</strong></p>
+<p>Small operational data → <strong>direct publisher access</strong></p>
+<hr>
+<h1 id="layer-ownership-matrix">Layer Ownership Matrix</h1>
+<table>
+<thead>
+<tr>
+<th>Responsibility</th>
+<th>ETL</th>
+<th>Athena</th>
+<th>Publisher</th>
+<th>Portal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data ingestion</td>
+<td>✓</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Data normalization</td>
+<td>✓</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Metric definitions</td>
+<td></td>
+<td>✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Aggregations</td>
+<td></td>
+<td>✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Artifact assembly</td>
+<td></td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td>Artifact validation</td>
+<td></td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td>Artifact versioning</td>
+<td></td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td>Dashboard rendering</td>
+<td></td>
+<td></td>
+<td></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>User interaction</td>
+<td></td>
+<td></td>
+<td></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Data freshness display</td>
+<td></td>
+<td></td>
+<td></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>AI insights</td>
+<td></td>
+<td></td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p>Rule: place logic in the layer that owns it.</p>
+<hr>
+<h1 id="repository-module-map">Repository Module Map</h1>
+<pre class="hljs"><code><div>src/
+  publisher/
+    adapters/
+    assemblers/
+    validators/
+    builders/
+    publishers/
+    audit/
+    notifications/
+
+  portal/
+    app/
+    components/
+    lib/
+    types/
+
+  shared/
+    constants/
+    schemas/
+    utils/
+</div></code></pre>
+<h3 id="module-responsibilities">Module Responsibilities</h3>
+<ul>
+<li><strong>adapters</strong> – data access</li>
+<li><strong>assemblers</strong> – combine data</li>
+<li><strong>validators</strong> – schema validation</li>
+<li><strong>builders</strong> – construct artifacts</li>
+<li><strong>publishers</strong> – write artifacts</li>
+<li><strong>portal/components</strong> – UI</li>
+<li><strong>shared</strong> – reusable utilities</li>
+</ul>
+<hr>
+<h1 id="multi%E2%80%91client--multi%E2%80%91environment-model">Multi‑Client / Multi‑Environment Model</h1>
+<p>The platform supports many clients <strong>without custom code</strong>.</p>
+<p>Core principle:</p>
+<p><strong>shared code + configuration + client‑scoped data + per‑client deployment</strong></p>
+<p>Each client has its own AWS environment.</p>
+<pre class="hljs"><code><div>Client AWS Environment
+  ETL → Parquet → Athena → Publisher → Artifacts
+</div></code></pre>
+<p>Only <strong>configuration and infrastructure</strong> differ.</p>
+<hr>
+<h2 id="configuration-structure">Configuration Structure</h2>
+<pre class="hljs"><code><div>config/
+  global.json
+
+  environments/
+    dev.json
+    qa.json
+    prod.json
+
+  clients/
+    contexture_az.json
+    contexture_co.json
+</div></code></pre>
+<p>New clients require configuration and deployment — not code changes.</p>
+<hr>
+<h1 id="per%E2%80%91client-deployment-architecture">Per‑Client Deployment Architecture</h1>
+<p>The platform uses a <strong>shared codebase deployed into multiple client AWS environments</strong>.</p>
+<pre class="hljs"><code><div>Shared Git Repository
+        ↓
+CI/CD Pipeline
+        ↓
+Client AWS Environments
+  Client A → ETL → Athena → Publisher → Artifacts
+  Client B → ETL → Athena → Publisher → Artifacts
+  Client C → ETL → Athena → Publisher → Artifacts
+</div></code></pre>
+<p>Each client environment contains its own:</p>
+<ul>
+<li>S3 buckets</li>
+<li>Athena databases</li>
+<li>ETL pipelines</li>
+<li>publisher runtime</li>
+<li>optional portal deployment</li>
+</ul>
+<h3 id="shared-platform-components">Shared Platform Components</h3>
+<ul>
+<li>repository</li>
+<li>publisher code</li>
+<li>portal code</li>
+<li>artifact schemas</li>
+<li>CI/CD pipelines</li>
+</ul>
+<h3 id="client%E2%80%91specific-components">Client‑Specific Components</h3>
+<ul>
+<li>AWS accounts</li>
+<li>regions</li>
+<li>bucket names</li>
+<li>MySQL endpoints</li>
+<li>OpenSearch endpoints</li>
+<li>secrets</li>
+</ul>
+<p>Client isolation occurs in <strong>infrastructure and configuration</strong>, not code.</p>
+<hr>
+<h1 id="client-onboarding-checklist">Client Onboarding Checklist</h1>
+<p>A new client should require <strong>infrastructure + configuration + deployment</strong>.</p>
+<h3 id="1-provision-infrastructure">1. Provision Infrastructure</h3>
+<p>Typical resources:</p>
+<ul>
+<li>S3 artifact bucket</li>
+<li>Athena database</li>
+<li>ETL Parquet storage</li>
+<li>IAM roles</li>
+<li>MySQL configuration store</li>
+<li>OpenSearch diagnostics</li>
+<li>scheduler</li>
+</ul>
+<p>Use Infrastructure as Code.</p>
+<hr>
+<h3 id="2-add-client-configuration">2. Add Client Configuration</h3>
+<pre class="hljs"><code><div>config/clients/contexture_az.json
+</div></code></pre>
+<p>Define:</p>
+<ul>
+<li>client_id</li>
+<li>dashboards</li>
+<li>artifact locations</li>
+<li>feature flags</li>
+</ul>
+<hr>
+<h3 id="3-deploy-platform">3. Deploy Platform</h3>
+<p>Deploy shared platform stack.</p>
+<p>Example</p>
+<pre class="hljs"><code><div>publisher --env prod --client contexture_az
+</div></code></pre>
+<hr>
+<h3 id="4-validate-environment">4. Validate Environment</h3>
+<p>Verify:</p>
+<ul>
+<li>Athena queries work</li>
+<li>artifacts generate</li>
+<li>schemas validate</li>
+<li>artifacts appear in S3</li>
+</ul>
+<hr>
+<h3 id="5-smoke-tests">5. Smoke Tests</h3>
+<p>Confirm:</p>
+<ul>
+<li>summary.json loads</li>
+<li>trend metrics appear</li>
+<li>exceptions render</li>
+<li>manifest lists artifacts</li>
+</ul>
+<hr>
+<h3 id="6-enable-monitoring">6. Enable Monitoring</h3>
+<p>Monitor:</p>
+<ul>
+<li>publisher success/failure</li>
+<li>artifact counts</li>
+<li>schema errors</li>
+<li>portal loading</li>
+</ul>
+<p>Logs available via:</p>
+<ul>
+<li>CloudWatch</li>
+<li>OpenSearch</li>
+</ul>
+<hr>
+<h1 id="example-claude-tasks">Example Claude Tasks</h1>
+<h3 id="add-an-artifact">Add an Artifact</h3>
+<pre class="hljs"><code><div>Read CLAUDE.md and docs/json-contracts.md.
+Add backlog.json showing backlog by site.
+Identify impacted layers before implementing.
+</div></code></pre>
+<hr>
+<h3 id="build-a-portal-panel">Build a Portal Panel</h3>
+<pre class="hljs"><code><div>Read CLAUDE.md and docs/portal-ui.md.
+Create a React panel for exceptions.json.
+</div></code></pre>
+<hr>
+<h3 id="modify-an-athena-view">Modify an Athena View</h3>
+<pre class="hljs"><code><div>Read CLAUDE.md and docs/athena-views.md.
+Add a metric for failed documents in the last 24 hours.
+</div></code></pre>
+<hr>
+<h3 id="investigate-publisher-failure">Investigate Publisher Failure</h3>
+<pre class="hljs"><code><div>Read CLAUDE.md and docs/publisher-runbook.md.
+Investigate why exceptions.json failed to generate.
+</div></code></pre>
+<hr>
+<h3 id="onboard-a-new-client">Onboard a New Client</h3>
+<pre class="hljs"><code><div>Read the scaling model section.
+Add configuration for client acme_health.
+Confirm no shared code changes are required.
+</div></code></pre>
+<hr>
+<h1 id="daily-development-workflow">Daily Development Workflow</h1>
+<ol>
+<li>review CLAUDE.md</li>
+<li>define task</li>
+<li>identify impacted layers</li>
+<li>propose file changes</li>
+<li>implement incrementally</li>
+<li>run tests</li>
+<li>review diffs</li>
+<li>commit small changes</li>
+<li>open pull request</li>
+</ol>
+<p>CI must pass before merge.</p>
+<hr>
+<h1 id="operational-run-modes">Operational Run Modes</h1>
+<p>The same codebase runs in three modes.</p>
+<h3 id="local-development">Local Development</h3>
+<pre class="hljs"><code><div>python src/publisher/main.py --env dev --client contexture_az
+</div></code></pre>
+<h3 id="continuous-integration">Continuous Integration</h3>
+<p>Runs automatically on PRs.</p>
+<p>Checks include:</p>
+<ul>
+<li>tests</li>
+<li>lint</li>
+<li>portal build</li>
+<li>schema validation</li>
+</ul>
+<h3 id="scheduled-publisher">Scheduled Publisher</h3>
+<pre class="hljs"><code><div>scheduler
+ → publisher
+ → generate artifacts
+</div></code></pre>
+<p>Possible runtimes:</p>
+<ul>
+<li>ECS</li>
+<li>Fargate</li>
+<li>Batch</li>
+</ul>
+<hr>
+<h1 id="continuous-integration-strategy">Continuous Integration Strategy</h1>
+<p>Minimum stages</p>
+<pre class="hljs"><code><div>python-test
+portal-build
+contract-validation
+schema-check
+</div></code></pre>
+<p>CI prevents:</p>
+<ul>
+<li>broken builds</li>
+<li>invalid artifacts</li>
+<li>contract drift</li>
+</ul>
+<hr>
+<h1 id="recommended-build-sequence">Recommended Build Sequence</h1>
+<h3 id="phase-1">Phase 1</h3>
+<ul>
+<li>CLAUDE.md</li>
+<li>architecture docs</li>
+</ul>
+<h3 id="phase-2">Phase 2</h3>
+<ul>
+<li>scaffold repository</li>
+</ul>
+<h3 id="phase-3">Phase 3</h3>
+<ul>
+<li>build vertical slice</li>
+</ul>
+<h3 id="phase-4">Phase 4</h3>
+<ul>
+<li>add artifacts</li>
+</ul>
+<h3 id="phase-5">Phase 5</h3>
+<ul>
+<li>monitoring and AI insights</li>
+</ul>
+<hr>
+<h1 id="key-principle">Key Principle</h1>
+<p>Claude accelerates development.</p>
+<p>Reliability comes from:</p>
+<ul>
+<li>clear architecture</li>
+<li>explicit contracts</li>
+<li>disciplined Git workflow</li>
+<li>strict CI</li>
+<li>human review</li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "dashboard_id": "sent_to_udm",
+  "title": "CCD Files Sent To UDM",
+  "description": "Tracks CCD files sent to UDM by region and site.",
+  "portal_route": "/sent_to_udm",
+  "sql_blocks": [
+    "sent_to_udm_summary",
+    "sent_to_udm_region_summary",
+    "sent_to_udm_trend_30d",
+    "sent_to_udm_lifetime_detail",
+    "sent_to_udm_recent_detail_30d"
+  ],
+  "artifacts": [
+    "summary.json",
+    "region_summary.json",
+    "trend_30d.json",
+    "lifetime_detail.json",
+    "recent_detail_30d.json"
+  ]
+}

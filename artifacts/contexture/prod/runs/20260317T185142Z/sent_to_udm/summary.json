@@ -1,0 +1,12 @@
+{
+  "earliest_event_ts": "2026-01-06 11:18:52-05:00",
+  "generated_at": "2026-03-17T18:51:42+00:00",
+  "latest_event_ts": "2026-03-07 01:07:46-05:00",
+  "regions_active_30d": 4,
+  "report_ts": "2026-03-17T18:51:42Z",
+  "schema_version": "1.2.0",
+  "sites_active_30d": 6,
+  "total_ccds_sent": 300,
+  "total_regions_active": 4,
+  "total_sites_active": 6
+}
