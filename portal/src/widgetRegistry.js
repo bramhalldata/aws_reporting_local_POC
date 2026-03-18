@@ -42,9 +42,10 @@
  * Registered types:
  *
  *   kpi_card         → KpiCard           data: scalar (number or string)
- *   line_chart       → TrendChart        data: array of { date: string, failures: number }
+ *   line_chart       → TrendChart        data: array of { date: string, [dataKey]: number }
  *   data_table       → TopSitesTable     data: array of { site: string, failures: number }
  *   exceptions_table → ExceptionsTable   data: array of { failure_type: string, count: number }
+ *   generic_table    → GenericTable      data: array of row objects; column config in widget.columns
  *
  * PLANNED (not yet registered — add entries when components exist):
  *   bar_chart    → future BarChart component
@@ -55,6 +56,7 @@ import KpiCard         from "./components/KpiCard.jsx";
 import TrendChart      from "./components/TrendChart.jsx";
 import TopSitesTable   from "./components/TopSitesTable.jsx";
 import ExceptionsTable from "./components/ExceptionsTable.jsx";
+import GenericTable    from "./components/GenericTable.jsx";
 import { metricCatalog } from "./metricCatalog.js";
 
 // ---------------------------------------------------------------------------
@@ -105,6 +107,9 @@ export const widgetRegistry = {
           hour: "2-digit", minute: "2-digit",
         });
         valueFontSize = "1.4rem";
+      } else if (formatter === "date_string" && value != null) {
+        value = String(value).slice(0, 10);
+        valueFontSize = "1.4rem";
       }
 
       return { label, value, tone, footnote: resolvedFootnote, delta, sparklineData, valueFontSize };
@@ -113,8 +118,11 @@ export const widgetRegistry = {
 
   line_chart: {
     component: TrendChart,
-    propsAdapter: (_widget, data) => ({
+    propsAdapter: (widget, data) => ({
       days: data,
+      dataKey:    widget.line_chart_config?.data_key,
+      chartTitle: widget.line_chart_config?.title,
+      subtitle:   widget.line_chart_config?.subtitle,
     }),
   },
 
@@ -131,6 +139,17 @@ export const widgetRegistry = {
     propsAdapter: (widget, data) => ({
       exceptions: data,
       title: widget.title,
+    }),
+  },
+
+  generic_table: {
+    component: GenericTable,
+    propsAdapter: (widget, data) => ({
+      title:        widget.title,
+      rows:         data,
+      columns:      widget.columns ?? [],
+      totals:       widget.totals ?? false,
+      emptyMessage: widget.empty_message,
     }),
   },
 

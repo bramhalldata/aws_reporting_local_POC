@@ -1,4 +1,5 @@
 {
+  "$schema": "../dashboard-definition.schema.json",
   "id": "dlq_operations",
   "title": "DLQ Operations",
   "description": "Monitors DLQ failure rates and site-level breakdowns.",

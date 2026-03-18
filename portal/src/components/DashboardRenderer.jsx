@@ -6,6 +6,7 @@ import { useDashboardLayout } from "../hooks/useDashboardLayout.js";
 import { useFilterState } from "../hooks/useFilterState.js";
 import { widgetPresets } from "../dashboards/widgetPresets.js";
 import { resolveWidgets } from "../dashboards/resolveWidgets.js";
+import { validateDefinition } from "../dashboards/validateDefinition.js";
 import HealthBanner    from "./HealthBanner.jsx";
 import ScopeEmptyState from "./ScopeEmptyState.jsx";
 import WidgetRenderer  from "./WidgetRenderer.jsx";
@@ -134,6 +135,29 @@ export default function DashboardRenderer({ definition }) {
 
   const { artifacts, loading, error, isScopeEmpty } =
     useDashboardArtifacts(definition.id, artifactNames);
+
+  // Validate the raw definition after all hooks have run.
+  // definition is a static import — this is effectively a one-time check per mount.
+  const validationResult = validateDefinition(definition);
+  if (!validationResult.valid) {
+    if (import.meta.env.DEV) {
+      return (
+        <div style={styles.page}>
+          <div style={styles.errorBox}>
+            <strong>Definition error in &quot;{definition.id}&quot;:</strong>
+            <ul>
+              {validationResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+    console.error(
+      `[DashboardRenderer] Invalid definition "${definition.id}":`,
+      validationResult.errors
+    );
+    // Production: proceed — render with UnknownWidget fallbacks, no blank screen.
+  }
 
   if (isScopeEmpty) {
     return (

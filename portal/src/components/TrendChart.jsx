@@ -27,19 +27,34 @@ const styles = {
   },
 };
 
-export default function TrendChart({ days }) {
+export default function TrendChart({
+  days,
+  dataKey = "failures",
+  chartTitle = "Failure Trend — last 30 days",
+  subtitle,
+}) {
   if (!days || days.length === 0) {
     return (
       <div style={styles.tableCard}>
-        <div style={styles.tableTitle}>Failure Trend — last 30 days</div>
+        <div style={styles.tableTitle}>{chartTitle}</div>
+        {subtitle && (
+          <p style={{ padding: "0 1.25rem", color: theme.textSecondary, fontSize: "0.85rem", margin: 0 }}>{subtitle}</p>
+        )}
         <p style={{ padding: "1.25rem", color: theme.textMuted, margin: 0 }}>No trend data available.</p>
       </div>
     );
   }
 
+  const tooltipLabel = dataKey
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
   return (
     <div style={styles.tableCard}>
-      <div style={styles.tableTitle}>Failure Trend — last 30 days</div>
+      <div style={styles.tableTitle}>{chartTitle}</div>
+      {subtitle && (
+        <p style={{ padding: "0.5rem 1.25rem 0", color: theme.textSecondary, fontSize: "0.85rem", margin: 0 }}>{subtitle}</p>
+      )}
       <div style={{ padding: "1.25rem 1rem 1rem 0" }}>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={days} margin={{ top: 4, right: 24, bottom: 4, left: 0 }}>
@@ -63,13 +78,13 @@ export default function TrendChart({ days }) {
               width={40}
             />
             <Tooltip
-              formatter={(value) => [value.toLocaleString(), "Failures"]}
+              formatter={(value) => [value.toLocaleString(), tooltipLabel]}
               labelStyle={{ fontWeight: 600, color: theme.textPrimary }}
               contentStyle={{ fontSize: "0.85rem" }}
             />
             <Area
               type="monotone"
-              dataKey="failures"
+              dataKey={dataKey}
               stroke={theme.primaryBlue}
               strokeWidth={2}
               fill="url(#trendAreaFill)"

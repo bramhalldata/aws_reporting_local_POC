@@ -1,0 +1,143 @@
+{
+  "$schema": "../dashboard-definition.schema.json",
+  "id": "sent_to_udm",
+  "title": "CCD Sent to UDM",
+  "description": "Monitors CCD files sent to UDM — regional summaries and site-level detail.",
+  "schema_version": "1.0.0",
+  "layout": {
+    "sections": [
+      {
+        "id": "kpis",
+        "label": "Overview",
+        "description": "All-time counts and date range for CCD files sent to UDM.",
+        "widget_ids": [
+          "total_ccds_sent_kpi",
+          "earliest_event_ts_kpi",
+          "latest_event_ts_kpi",
+          "regions_active_30d_kpi",
+          "sites_active_30d_kpi"
+        ],
+        "layout": { "type": "flex_row" }
+      },
+      {
+        "id": "region_summary",
+        "label": "Region Summary",
+        "description": "CCDs sent broken down by region, all time.",
+        "widget_ids": ["region_summary_table"],
+        "layout": { "type": "stack" }
+      },
+      {
+        "id": "trends",
+        "label": "Trends",
+        "description": "Daily CCD volume over the last 30 days.",
+        "widget_ids": ["ccd_trend_chart"],
+        "layout": { "type": "stack" }
+      },
+      {
+        "id": "lifetime_detail",
+        "label": "Facility Detail — All Time",
+        "description": "Site-level CCD counts and date ranges for all time.",
+        "widget_ids": ["lifetime_detail_table"],
+        "layout": { "type": "stack" }
+      },
+      {
+        "id": "recent_detail",
+        "label": "Site Activity — Last 30 Days",
+        "description": "Sites active in the last 30 days.",
+        "widget_ids": ["recent_detail_table"],
+        "layout": { "type": "stack" }
+      }
+    ]
+  },
+  "widgets": [
+    {
+      "id": "total_ccds_sent_kpi",
+      "type": "kpi_card",
+      "metric": "total_ccds_sent",
+      "data_source": { "artifact": "summary.json", "field": "total_ccds_sent" }
+    },
+    {
+      "id": "earliest_event_ts_kpi",
+      "type": "kpi_card",
+      "metric": "earliest_event_ts",
+      "data_source": { "artifact": "summary.json", "field": "earliest_event_ts" }
+    },
+    {
+      "id": "latest_event_ts_kpi",
+      "type": "kpi_card",
+      "metric": "latest_event_ts",
+      "data_source": { "artifact": "summary.json", "field": "latest_event_ts" }
+    },
+    {
+      "id": "regions_active_30d_kpi",
+      "type": "kpi_card",
+      "metric": "regions_active_30d",
+      "data_source": { "artifact": "summary.json", "field": "regions_active_30d" }
+    },
+    {
+      "id": "sites_active_30d_kpi",
+      "type": "kpi_card",
+      "metric": "sites_active_30d",
+      "data_source": { "artifact": "summary.json", "field": "sites_active_30d" }
+    },
+    {
+      "id": "region_summary_table",
+      "type": "generic_table",
+      "title": "Region Summary — All Time",
+      "data_source": { "artifact": "region_summary.json", "field": "regions" },
+      "totals": true,
+      "columns": [
+        { "field": "region",    "header": "Region",              "aggregate": "label" },
+        { "field": "ccd_count", "header": "CCDs Sent", "format": "number",      "aggregate": "sum" },
+        { "field": "first_seen","header": "First CCD Sent",      "format": "date_string", "aggregate": "min" },
+        { "field": "last_seen", "header": "Most Recent CCD Sent","format": "date_string", "aggregate": "max" }
+      ]
+    },
+    {
+      "id": "ccd_trend_chart",
+      "type": "line_chart",
+      "data_source": { "artifact": "trend_30d.json", "field": "days" },
+      "line_chart_config": {
+        "data_key": "ccd_count",
+        "title": "CCDs Sent To UDM by Region (Last 30 Days)",
+        "subtitle": "Regional breakdown coming in a future release."
+      }
+    },
+    {
+      "id": "lifetime_detail_table",
+      "type": "generic_table",
+      "title": "Facility Detail — All Time",
+      "data_source": { "artifact": "lifetime_detail.json", "field": "rows" },
+      "totals": false,
+      "columns": [
+        { "field": "region",    "header": "Region" },
+        { "field": "site",      "header": "Facility" },
+        { "field": "ccd_count", "header": "CCDs Sent",      "format": "number" },
+        { "field": "first_seen","header": "First CCD",      "format": "timestamp" },
+        { "field": "last_seen", "header": "Most Recent CCD","format": "timestamp" }
+      ]
+    },
+    {
+      "id": "recent_detail_table",
+      "type": "generic_table",
+      "title": "Site Activity — Last 30 Days",
+      "data_source": { "artifact": "recent_detail_30d.json", "field": "rows" },
+      "totals": false,
+      "empty_message": "No sites active in the last 30 days.",
+      "columns": [
+        { "field": "region",        "header": "Region" },
+        { "field": "site",          "header": "Facility" },
+        { "field": "ccd_count",     "header": "CCDs Sent",       "format": "number" },
+        { "field": "first_seen_30d","header": "First Sent (30d)", "format": "timestamp" },
+        { "field": "last_seen_30d", "header": "Last Sent (30d)",  "format": "timestamp" }
+      ]
+    }
+  ],
+  "filters": [
+    { "id": "client", "type": "url_param", "param": "client" },
+    { "id": "env",    "type": "url_param", "param": "env" }
+  ],
+  "defaults": {
+    "section": "kpis"
+  }
+}

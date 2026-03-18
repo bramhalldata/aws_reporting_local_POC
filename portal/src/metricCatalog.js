@@ -92,4 +92,56 @@ export const metricCatalog = {
     trend:             null,
     thresholds:        [],
   },
+
+  // --- sent_to_udm metrics ---
+
+  total_ccds_sent: {
+    label:             "Total CCDs Sent",
+    formatter:         "number",
+    tone:              "neutral",
+    footnote:          "All time",
+    data_source_field: "total_ccds_sent",
+    trend:             null,
+    thresholds:        [],
+  },
+
+  earliest_event_ts: {
+    label:             "First CCD Sent",
+    formatter:         "date_string",
+    tone:              "neutral",
+    footnote:          null,
+    data_source_field: "earliest_event_ts",
+    trend:             null,
+    thresholds:        [],
+  },
+
+  latest_event_ts: {
+    label:             "Most Recent CCD Sent",
+    formatter:         "date_string",
+    tone:              "neutral",
+    footnote:          null,
+    data_source_field: "latest_event_ts",
+    trend:             null,
+    thresholds:        [],
+  },
+
+  regions_active_30d: {
+    label:             "Regions Active",
+    formatter:         "number",
+    tone:              "neutral",
+    footnote:          "Last 30 days",
+    data_source_field: "regions_active_30d",
+    trend:             null,
+    thresholds:        [],
+  },
+
+  sites_active_30d: {
+    label:             "Sites Active",
+    formatter:         "number",
+    tone:              "neutral",
+    footnote:          "Last 30 days",
+    data_source_field: "sites_active_30d",
+    trend:             null,
+    thresholds:        [],
+  },
 };

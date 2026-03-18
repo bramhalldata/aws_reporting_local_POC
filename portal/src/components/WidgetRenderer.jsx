@@ -48,6 +48,15 @@ export default function WidgetRenderer({ widget, artifacts, filterState }) {
     return <UnknownWidget type={widget.type} id={widget.id} />;
   }
 
+  if (!widget.data_source) {
+    return (
+      <UnknownWidget
+        type={`config_error: widget "${widget.id}" has no data_source`}
+        id={widget.id}
+      />
+    );
+  }
+
   const artifactData = artifacts[widget.data_source.artifact];
 
   if (artifactData === undefined) {

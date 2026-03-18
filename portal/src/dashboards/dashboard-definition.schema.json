@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DashboardDefinition",
+  "description": "JSON Schema for portal/src/dashboards/{id}/definition.json files. Used by VSCode for editor validation and by Vitest for regression testing. Not loaded at runtime.",
+  "type": "object",
+  "required": ["id", "title", "schema_version", "layout", "widgets", "filters", "defaults"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema":        { "type": "string" },
+    "id":             { "type": "string", "minLength": 1 },
+    "title":          { "type": "string", "minLength": 1 },
+    "description":    { "type": "string" },
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "layout": {
+      "type": "object",
+      "required": ["sections"],
+      "additionalProperties": false,
+      "properties": {
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/Section" }
+        }
+      }
+    },
+    "widgets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/Widget" }
+    },
+    "filters": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Filter" }
+    },
+    "defaults": {
+      "type": "object",
+      "required": ["section"],
+      "additionalProperties": false,
+      "properties": {
+        "section": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+
+  "definitions": {
+    "Section": {
+      "type": "object",
+      "required": ["id", "widget_ids"],
+      "additionalProperties": false,
+      "properties": {
+        "id":          { "type": "string", "minLength": 1 },
+        "label":       { "type": "string" },
+        "description": { "type": "string" },
+        "widget_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "layout": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "enum": ["grid", "stack", "flex_row"] }
+          }
+        }
+      }
+    },
+
+    "Widget": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id":            { "type": "string", "minLength": 1 },
+        "type":          { "type": "string" },
+        "preset":        { "type": "string" },
+        "metric":        { "type": "string" },
+        "title":         { "type": "string" },
+        "totals":        { "type": "boolean" },
+        "empty_message": { "type": "string" },
+        "data_source":   { "$ref": "#/definitions/DataSource" },
+        "layout":        { "$ref": "#/definitions/WidgetLayout" },
+        "kpi_config":    { "$ref": "#/definitions/KpiConfig" },
+        "line_chart_config": { "$ref": "#/definitions/LineChartConfig" },
+        "columns": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Column" }
+        }
+      }
+    },
+
+    "DataSource": {
+      "type": "object",
+      "required": ["artifact", "field"],
+      "additionalProperties": false,
+      "properties": {
+        "artifact": { "type": "string", "pattern": "\\.json$" },
+        "field":    { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "WidgetLayout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "col": { "type": "integer" },
+        "row": { "type": "integer" },
+        "w":   { "type": "integer" },
+        "h":   { "type": "integer" }
+      }
+    },
+
+    "KpiConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tone":         { "type": "string", "enum": ["neutral", "positive", "warning", "critical"] },
+        "footnote":     { "type": "string" },
+        "delta":        { "type": "string" },
+        "sparklineData":{ "type": "array" }
+      }
+    },
+
+    "LineChartConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data_key": { "type": "string" },
+        "title":    { "type": "string" },
+        "subtitle": { "type": "string" }
+      }
+    },
+
+    "Column": {
+      "type": "object",
+      "required": ["field", "header"],
+      "additionalProperties": false,
+      "properties": {
+        "field":     { "type": "string", "minLength": 1 },
+        "header":    { "type": "string" },
+        "format":    { "type": "string", "enum": ["number", "date_string", "timestamp"] },
+        "aggregate": { "type": "string", "enum": ["label", "sum", "min", "max", "none"] }
+      }
+    },
+
+    "Filter": {
+      "type": "object",
+      "required": ["id", "type", "param"],
+      "additionalProperties": false,
+      "properties": {
+        "id":      { "type": "string", "minLength": 1 },
+        "type":    { "type": "string" },
+        "param":   { "type": "string" },
+        "default": { "type": "string" }
+      }
+    }
+  }
+}

@@ -115,4 +115,59 @@ describe("metric catalog resolution", () => {
     metricCatalog.failures_last_24h = savedEntry; // restore
     expect(props.tone).toBe("neutral");
   });
+
+  // -------------------------------------------------------------------------
+  // Test 8 — date_string formatter slices value to 10 chars and sets font size
+  // -------------------------------------------------------------------------
+  it("date_string formatter slices value to 10 chars and sets valueFontSize", () => {
+    // earliest_event_ts uses formatter: "date_string"
+    const widget = { metric: "earliest_event_ts", data_source: {} };
+    const props = adapter(widget, "2025-01-10T00:00:00Z");
+
+    expect(props.value).toBe("2025-01-10");
+    expect(props.valueFontSize).toBe("1.4rem");
+  });
+
+  // -------------------------------------------------------------------------
+  // Test 9 — datetime formatter preserves existing behaviour
+  // -------------------------------------------------------------------------
+  it("datetime formatter converts ISO string to locale date+time string", () => {
+    // latest_event_timestamp uses formatter: "datetime"
+    const widget = { metric: "latest_event_timestamp", data_source: {} };
+    const isoValue = "2026-03-10T14:30:00Z";
+    const props = adapter(widget, isoValue);
+
+    // Value must be a non-empty string produced by toLocaleString — not the raw ISO
+    expect(typeof props.value).toBe("string");
+    expect(props.value).not.toBe(isoValue);
+    expect(props.value.length).toBeGreaterThan(0);
+    expect(props.valueFontSize).toBe("1.4rem");
+  });
+
+  // -------------------------------------------------------------------------
+  // Test 10 — total_ccds_sent metric resolves label and footnote
+  // -------------------------------------------------------------------------
+  it("total_ccds_sent resolves correct label and footnote", () => {
+    const widget = { metric: "total_ccds_sent", data_source: {} };
+    const props = adapter(widget, 4200);
+
+    expect(props.label).toBe("Total CCDs Sent");
+    expect(props.footnote).toBe("All time");
+    expect(props.value).toBe(4200);
+    expect(props.tone).toBe("neutral");
+  });
+
+  // -------------------------------------------------------------------------
+  // Test 11 — earliest_event_ts metric: formatter is date_string, output is
+  //           a 10-character date string
+  // -------------------------------------------------------------------------
+  it("earliest_event_ts resolves date_string formatter and produces a 10-char date", () => {
+    const widget = { metric: "earliest_event_ts", data_source: {} };
+    const props = adapter(widget, "2025-01-10");
+
+    expect(props.label).toBe("First CCD Sent");
+    expect(props.value).toBe("2025-01-10");
+    expect(props.value).toHaveLength(10);
+    expect(props.valueFontSize).toBe("1.4rem");
+  });
 });

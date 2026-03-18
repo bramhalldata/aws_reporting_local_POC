@@ -153,13 +153,14 @@ over query params of the same name.
 |---------------|----------|
 | `"grid"` | Draggable, resizable grid; widgets use `col`, `row`, `w`, `h` for initial placement |
 | `"stack"` | Vertical full-width stack; widgets rendered top-to-bottom in `widget_ids` order |
+| `"flex_row"` | Horizontal flex row; widgets share equal width and wrap on small viewports. Widget `layout` is ignored. Use for KPI overview rows where equal sizing is acceptable. |
 
 ### Available widget types
 
 For full widget type documentation — field tables, data shapes, examples, metric catalog, and
 presets — see **[docs/guides/widget-library.md](widget-library.md)**.
 
-Current types: `kpi_card`, `line_chart`, `data_table`, `exceptions_table`.  If a widget type
+Current types: `kpi_card`, `line_chart`, `data_table`, `exceptions_table`, `generic_table`.  If a widget type
 is not registered, `WidgetRenderer` renders a visible warning block at runtime — no crash.
 
 ### The `metric` field on `kpi_card` widgets
@@ -367,6 +368,7 @@ Before opening a PR:
 - [ ] All `widget_ids` in `layout.sections` have a matching entry in `widgets`
 - [ ] All `kpi_card` widgets with a `"metric"` field have a matching entry in `metricCatalog.js`
 - [ ] All artifact filenames referenced in `data_source.artifact` are `snake_case.json`
+- [ ] All `generic_table` widgets with `totals: true` have at least one column with an `aggregate` field (value other than `"none"`)
 - [ ] View component function name matches the filename (`SitePerformance` ↔ `SitePerformance.jsx`)
 - [ ] Registry entry `id` matches the folder name and `definition.json` id
 - [ ] `npm test` in `portal/` — all tests pass

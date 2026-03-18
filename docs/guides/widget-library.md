@@ -118,10 +118,21 @@ visualisation on dashboards where change over time matters.
 | Field | Required | Description |
 |-------|----------|-------------|
 | `type` | Yes | `"line_chart"` |
-| `title` | No | Chart header text (default: `"Failure Trend — last 30 days"`) |
 | `data_source.artifact` | Yes | JSON artifact filename (e.g. `"trend_30d.json"`) |
 | `data_source.field` | Yes | Array field within artifact (e.g. `"days"`) |
+| `line_chart_config` | No | Chart configuration block — see table below |
 | `layout` | Yes (grid) | Initial grid position: `{ col, row, w, h }` |
+
+**`line_chart_config` fields** (all optional):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data_key` | string | Row field to plot on the Y-axis (e.g. `"failures"`, `"ccd_count"`). Defaults to `"failures"`. |
+| `title` | string | Chart heading text. Defaults to `"Failure Trend — last 30 days"`. |
+| `subtitle` | string | Secondary line rendered below the heading. |
+
+> **Note:** The top-level `title` field on a `line_chart` widget is not read by the propsAdapter.
+> Use `line_chart_config.title` to set the chart heading.
 
 **Artifact data shape:**
 
@@ -129,17 +140,35 @@ visualisation on dashboards where change over time matters.
 [{ "date": "YYYY-MM-DD", "failures": 42 }, ...]
 ```
 
+The array field must contain objects with a `"date"` key and the field named by `data_key`.
 Empty array renders "No trend data available."
 
-**Example:**
+**Example — default data_key (`"failures"`):**
 
 ```json
 {
   "id": "failure_trend",
   "type": "line_chart",
-  "title": "30-Day Failure Trend",
   "data_source": { "artifact": "trend_30d.json", "field": "days" },
+  "line_chart_config": {
+    "title": "30-Day Failure Trend"
+  },
   "layout": { "col": 0, "row": 0, "w": 12, "h": 4 }
+}
+```
+
+**Example — custom data_key and subtitle:**
+
+```json
+{
+  "id": "ccd_trend_chart",
+  "type": "line_chart",
+  "data_source": { "artifact": "trend_30d.json", "field": "days" },
+  "line_chart_config": {
+    "data_key": "ccd_count",
+    "title": "CCDs Sent To UDM (Last 30 Days)",
+    "subtitle": "Regional breakdown coming in a future release."
+  }
 }
 ```
 
@@ -232,6 +261,152 @@ site-level breakdowns, use `data_table` instead.
 
 ---
 
+### `generic_table`
+
+**Purpose:** Display a tabular dataset with configurable columns, value formatting, and optional
+totals row. Use for any row-level reporting data that isn't constrained to the fixed shapes
+of `data_table` or `exceptions_table`.
+
+**When to choose:** Multi-column reporting tables — regional summaries, facility breakdowns,
+site activity detail — where column headers, display formats, and aggregate behaviour need
+explicit configuration. For site-failure-count lists, `data_table` is simpler; for
+exception-type breakdowns, `exceptions_table` is simpler.
+
+**definition.json fields:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | `"generic_table"` |
+| `title` | No | Table heading text |
+| `data_source.artifact` | Yes | JSON artifact filename (e.g. `"region_summary.json"`) |
+| `data_source.field` | Yes | Array field within artifact (e.g. `"regions"`) |
+| `columns` | Yes | Array of column definitions — see column shape below |
+| `totals` | No | `true` to render a totals row using each column's `aggregate` function. Requires at least one column with a non-`"none"` `aggregate`. |
+| `empty_message` | No | Text shown when `rows` is empty (default: `"No data available."`) |
+
+**Column shape:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `field` | Yes | Row object key to render in this column |
+| `header` | Yes | Column header label |
+| `format` | No | Display format — see format values below |
+| `aggregate` | No | Totals-row function — see aggregate values below |
+
+**Column `format` values:**
+
+| Value | Behaviour |
+|-------|-----------|
+| *(absent)* | Raw `String(value)` |
+| `"number"` | `Number(value).toLocaleString()` — locale-formatted integer or decimal |
+| `"date_string"` | First 10 characters of the string (yields `YYYY-MM-DD` from ISO dates) |
+| `"timestamp"` | First 19 characters with `T` replaced by a space (`YYYY-MM-DD HH:MM:SS`) |
+
+**Column `aggregate` values:**
+
+| Value | Totals-row behaviour |
+|-------|----------------------|
+| *(absent)* | No total (cell is empty) |
+| `"none"` | No total (cell is empty) |
+| `"label"` | Renders the string `"Total"` — use on the first/label column |
+| `"sum"` | Sum of all numeric values in the column |
+| `"min"` | Minimum numeric value |
+| `"max"` | Maximum numeric value |
+
+> **Validation constraint:** A widget with `totals: true` must have at least one column
+> with `aggregate` set to a value other than `"none"`. A `totals: true` widget with no
+> aggregate columns will produce an all-`"—"` totals row and is caught by `validateDefinition`.
+
+**Artifact data shape:** array of row objects.
+
+```json
+[
+  { "region": "Northeast", "ccd_count": 1200, "first_seen": "2025-01-10", "last_seen": "2026-03-10" },
+  { "region": "Southeast", "ccd_count":  800, "first_seen": "2025-02-05", "last_seen": "2026-03-05" }
+]
+```
+
+Empty array renders `empty_message` (default: `"No data available."`).
+
+**Example — regional summary with totals:**
+
+```json
+{
+  "id": "region_summary_table",
+  "type": "generic_table",
+  "title": "Region Summary — All Time",
+  "data_source": { "artifact": "region_summary.json", "field": "regions" },
+  "totals": true,
+  "columns": [
+    { "field": "region",    "header": "Region",               "aggregate": "label" },
+    { "field": "ccd_count", "header": "CCDs Sent", "format": "number", "aggregate": "sum" },
+    { "field": "first_seen","header": "First CCD Sent",       "format": "date_string", "aggregate": "min" },
+    { "field": "last_seen", "header": "Most Recent CCD Sent", "format": "date_string", "aggregate": "max" }
+  ]
+}
+```
+
+**Example — detail table without totals:**
+
+```json
+{
+  "id": "lifetime_detail_table",
+  "type": "generic_table",
+  "title": "Facility Detail — All Time",
+  "data_source": { "artifact": "lifetime_detail.json", "field": "rows" },
+  "totals": false,
+  "columns": [
+    { "field": "region",    "header": "Region" },
+    { "field": "site",      "header": "Facility" },
+    { "field": "ccd_count", "header": "CCDs Sent",       "format": "number" },
+    { "field": "first_seen","header": "First CCD",       "format": "timestamp" },
+    { "field": "last_seen", "header": "Most Recent CCD", "format": "timestamp" }
+  ]
+}
+```
+
+**Example — empty state with custom message:**
+
+```json
+{
+  "id": "recent_detail_table",
+  "type": "generic_table",
+  "empty_message": "No sites active in the last 30 days.",
+  "data_source": { "artifact": "recent_detail_30d.json", "field": "rows" },
+  "totals": false,
+  "columns": [...]
+}
+```
+
+---
+
+## Section Layout Types
+
+Sections in `layout.sections[]` specify a `layout.type` that controls how their widgets
+are arranged.
+
+| Layout type | Behaviour | Typical use |
+|-------------|-----------|-------------|
+| `"grid"` | CSS grid — widgets positioned by `layout.col`, `layout.row`, `layout.w`, `layout.h` | KPI card rows with precise sizing |
+| `"stack"` | Single-column vertical stack — widget `layout` ignored | Full-width tables and charts |
+| `"flex_row"` | Horizontal flex row — widgets sized equally and wrap on small viewports | KPI card overview rows where equal sizing is acceptable |
+
+> **`flex_row` vs `grid`:** Use `flex_row` when KPI cards should share equal width automatically.
+> Use `grid` when widgets need specific column spans or non-uniform sizes.
+
+**Example — `flex_row` overview section:**
+
+```json
+{
+  "id": "kpis",
+  "label": "Overview",
+  "widget_ids": ["total_kpi", "first_seen_kpi", "last_seen_kpi", "regions_kpi", "sites_kpi"],
+  "layout": { "type": "flex_row" }
+}
+```
+
+---
+
 ## Metric Catalog Reference
 
 The metric catalog (`portal/src/metricCatalog.js`) provides display semantics for KPI card
@@ -243,7 +418,7 @@ metric by its catalog ID via the `"metric"` field.
 ```js
 {
   label:             string,           // eyebrow display name
-  formatter:         "number" | "string" | "currency" | "percent" | "datetime",
+  formatter:         "number" | "string" | "currency" | "percent" | "datetime" | "date_string",
   tone:              "neutral" | "positive" | "warning" | "critical",
   footnote:          string | null,    // explanatory line below value
   data_source_field: string | null,    // advisory only — not used by renderer
@@ -261,6 +436,15 @@ metric by its catalog ID via the `"metric"` field.
 | `total_documents_last_24h` | Documents — last 24 h | number | neutral | 24-hour rolling window |
 | `active_sites_last_24h` | Active Sites — last 24 h | number | neutral | Sites with ≥1 event |
 | `latest_event_timestamp` | Latest Event | datetime | neutral | Most recent pipeline event |
+| `total_ccds_sent` | Total CCDs Sent | number | neutral | All time |
+| `earliest_event_ts` | First CCD Sent | date_string | neutral | *(none)* |
+| `latest_event_ts` | Most Recent CCD Sent | date_string | neutral | *(none)* |
+| `regions_active_30d` | Regions Active | number | neutral | Last 30 days |
+| `sites_active_30d` | Sites Active | number | neutral | Last 30 days |
+
+**`date_string` formatter:** Slices the artifact value to its first 10 characters, yielding
+`YYYY-MM-DD` from ISO date strings or ISO timestamps. The KPI card renders the value in a
+slightly smaller font (`1.4rem`) to accommodate the wider string.
 
 ### Adding a new metric
 
